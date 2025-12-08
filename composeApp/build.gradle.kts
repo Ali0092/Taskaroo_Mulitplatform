@@ -1,5 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import kotlin.collections.set
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -16,6 +18,7 @@ kotlin {
     }
     
     listOf(
+        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -24,6 +27,29 @@ kotlin {
             isStatic = true
         }
     }
+
+//    cocoapods {
+//        // Required fields
+//        version = "1.0.0" // 👈 REQUIRED: pod version, can be anything semantic
+//        summary = "Shared Kotlin Multiplatform module"
+//        homepage = "https://example.com"
+//        ios.deploymentTarget = "15.3"
+//        //podfile = project.file("../iosApp/Podfile")
+//
+//        framework {
+//            baseName = "ComposeApp" // 👈 this must match your import name in Swift
+//            isStatic = false
+//        }
+//
+//        // Maps custom Xcode configuration to NativeBuildType
+//        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+//        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+//
+//        // Firebase iOS pods
+//        pod("FirebaseAnalytics")
+//        pod("FirebaseCrashlytics")
+//        pod("FirebasePerformance")
+//    }
     
     sourceSets {
         androidMain.dependencies {
@@ -39,6 +65,11 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(compose.materialIconsExtended)
+
+            // Voyager
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.transitions)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
