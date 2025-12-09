@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.modal.PrefsModel
 import com.dev.taskaroo.onBackgroundColor
@@ -59,6 +61,8 @@ class PreferencesScreen: Screen {
 
     @Composable
     override fun Content() {
+
+        val navigator = LocalNavigator.currentOrThrow
 
         val prefsList = listOf(
             PrefsModel(Res.drawable.user, "Personal"),
@@ -102,7 +106,7 @@ class PreferencesScreen: Screen {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF798F79)),
                     onClick = {
-
+                        navigator.push(BasicInfoScreen())
                     }
                 ) {
                     Text(text = "Proceed!", color = onPrimary, modifier = Modifier.padding(vertical = 3.dp))
