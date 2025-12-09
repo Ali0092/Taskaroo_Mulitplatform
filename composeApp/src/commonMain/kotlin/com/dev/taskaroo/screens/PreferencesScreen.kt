@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,12 +36,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.modal.PrefsModel
+import com.dev.taskaroo.onBackgroundColor
+import com.dev.taskaroo.onPrimary
+import com.dev.taskaroo.primaryColorVariant
+import com.dev.taskaroo.selectedItemColor
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
@@ -58,7 +67,7 @@ class PreferencesScreen: Screen {
         )
 
         Scaffold { paddingValues ->
-            Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp)) {
+            Column(modifier = Modifier.fillMaxSize().background(backgroundColor).padding(paddingValues).padding(horizontal = 16.dp)) {
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
                     text = "How do you plan to user Taskaroo?",
@@ -87,6 +96,19 @@ class PreferencesScreen: Screen {
                     }
                 }
 
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF798F79)),
+                    onClick = {
+
+                    }
+                ) {
+                    Text(text = "Proceed!", color = onPrimary, modifier = Modifier.padding(vertical = 3.dp))
+
+                }
+
             }
         }
 
@@ -103,10 +125,15 @@ fun PreferenceSingleItem(icon: DrawableResource, title: String, onSelected: (Str
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 12.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable {
+                isChecked = !isChecked
+                onSelected(title)
+            }
             .background(Color.Transparent),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = if(isChecked) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent),
-        border = BorderStroke(width = 0.5.dp, color = MaterialTheme.colorScheme.onBackground),
+        colors = CardDefaults.cardColors(containerColor = if(isChecked) selectedItemColor else Color.Transparent),
+        border = BorderStroke(width = 0.5.dp, color = onBackgroundColor),
     ) {
 
         Row(modifier = Modifier
@@ -122,17 +149,14 @@ fun PreferenceSingleItem(icon: DrawableResource, title: String, onSelected: (Str
             Text(text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground
+                color = onBackgroundColor
             )
             Spacer(Modifier.weight(1f))
 
             Icon(imageVector = if (isChecked) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
                 contentDescription = null,
-                modifier = Modifier.size(25.dp).clickable{
-                    isChecked = !isChecked
-                    onSelected(title)
-                },
-                tint = MaterialTheme.colorScheme.onBackground
+                modifier = Modifier.size(25.dp),
+                tint = primaryColorVariant
             )
         }
 
