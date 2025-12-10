@@ -34,6 +34,7 @@ import com.dev.taskaroo.common.DotIndicator
 import com.dev.taskaroo.modal.PagerModel
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.onPrimary
+import com.dev.taskaroo.primaryColorVariant
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
@@ -53,7 +54,7 @@ class IntroScreen : Screen {
         val picturesList = listOf(
             PagerModel(
                 image = Res.drawable.onboarding_1,
-                quote = "Manage your tasks &amp; goals \nwith Taskaroo",
+                quote = "Manage your tasks & goals \nwith Taskaroo",
                 author = "Peter Parker."
             ),
             PagerModel(
@@ -151,7 +152,7 @@ fun PagerView(image: DrawableResource, quote: String, author: String) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = author,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = primaryColorVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center

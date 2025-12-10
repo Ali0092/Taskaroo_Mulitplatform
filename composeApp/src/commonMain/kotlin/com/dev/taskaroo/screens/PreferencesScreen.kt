@@ -75,9 +75,9 @@ class PreferencesScreen: Screen {
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
                     text = "How do you plan to user Taskaroo?",
-                    fontSize = 18.sp,
+                    fontSize = 21.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = onBackgroundColor
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
