@@ -1,6 +1,14 @@
 package com.dev.taskaroo.common
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,9 +24,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -32,18 +41,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dev.taskaroo.backgroundColor
+import com.dev.taskaroo.highPriorityBackground
+import com.dev.taskaroo.highPriorityColor
+import com.dev.taskaroo.lowPriorityBackground
+import com.dev.taskaroo.lowPriorityColor
+import com.dev.taskaroo.mediumPriorityBackground
+import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.onBackgroundColor
+import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.urgentPriorityBackground
+import com.dev.taskaroo.urgentPriorityColor
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import taskaroo.composeapp.generated.resources.Res
+import taskaroo.composeapp.generated.resources.calendar
 
 @Composable
 fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
@@ -102,7 +125,6 @@ fun TaskChipRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp)
             .background(
                 color = primaryLiteColorVariant.copy(alpha = 0.15f),
                 shape = CircleShape
@@ -147,7 +169,7 @@ fun TaskCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(top = 16.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -157,9 +179,10 @@ fun TaskCard(
                 .padding(top = 16.dp)
         ) {
             // Title and Subtitle
-            Text(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 text = taskData.title,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Normal,
@@ -184,7 +207,15 @@ fun TaskCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Category Chip
+                // Priority Chip
+                val (priorityColor, priorityBackground) = when (taskData.category.lowercase()) {
+                    "urgent" -> urgentPriorityColor to urgentPriorityBackground
+                    "high" -> highPriorityColor to highPriorityBackground
+                    "medium" -> mediumPriorityColor to mediumPriorityBackground
+                    "low" -> lowPriorityColor to lowPriorityBackground
+                    else -> Color.Gray to Color.Transparent
+                }
+
                 Box(
                     modifier = Modifier
                         .background(
@@ -201,7 +232,11 @@ fun TaskCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Card(modifier = Modifier.size(8.dp), shape = CircleShape, colors = CardDefaults.cardColors(containerColor = Color.LightGray)) {}
+                        Card(
+                            modifier = Modifier.size(8.dp),
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(containerColor = priorityColor)
+                        ) {}
                         Spacer(Modifier.width(6.dp))
                         Text(
                             text = taskData.category,
@@ -255,7 +290,7 @@ fun TaskCard(
                         .background(
                             color = primaryLiteColorVariant.copy(0.5f)
                         )
-                        .padding(12.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp)
                 ) {
                     Text(
                         text = "Task Details",
@@ -283,7 +318,7 @@ fun TaskCard(
 
                     // Task Items
                     Column(
-                        modifier = Modifier.padding(top = 8.dp),
+                        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         taskData.taskList.forEach { taskItem ->
@@ -302,6 +337,91 @@ fun TaskCard(
 }
 
 @Composable
+fun CircularCheckbox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (checked) 1.1f else 1f,
+        animationSpec = tween(durationMillis = 200),
+        label = "checkbox_scale"
+    )
+
+    Box(
+        modifier = modifier
+            .size(24.dp)
+            .drawBehind {
+                val strokeWidth = Stroke(width = 2.dp.toPx())
+                val radius = size.minDimension / 2
+
+                // Draw circle border
+                drawCircle(
+                    color = if (checked) primaryColorVariant else Color.Gray.copy(alpha = 0.5f),
+                    radius = radius,
+                    style = if (checked) Stroke(width = strokeWidth.width) else strokeWidth
+                )
+
+                // Draw filled circle if checked
+                if (checked) {
+                    drawCircle(
+                        color = primaryColorVariant,
+                        radius = radius - strokeWidth.width / 2
+                    )
+                }
+            }
+            .clickable { onCheckedChange(!checked) },
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = checked,
+            enter = fadeIn(animationSpec = tween(150)) + expandVertically(
+                animationSpec = tween(150),
+                expandFrom = Alignment.CenterVertically
+            ),
+            exit = fadeOut(animationSpec = tween(150)) + shrinkVertically(
+                animationSpec = tween(150),
+                shrinkTowards = Alignment.CenterVertically
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Checked",
+                tint = Color.White,
+                modifier = Modifier.size(14.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun CapsuleFloatingActionButton(
+    onAddClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        Box(modifier = Modifier
+            .size(56.dp)
+            .clip(CircleShape)
+            .border(BorderStroke(width = 1.dp, color = primaryColorVariant), shape = CircleShape)
+            .clickable {
+                onAddClick()
+            }
+            .background(primary), contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.calendar),
+                contentDescription = "add_task",
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun TaskItemRow(
     taskItem: TaskItem,
     onToggle: (Boolean) -> Unit
@@ -314,7 +434,7 @@ fun TaskItemRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Checkbox(
+        CircularCheckbox(
             checked = isChecked,
             onCheckedChange = { checked ->
                 isChecked = checked
@@ -325,9 +445,12 @@ fun TaskItemRow(
 
         Text(
             text = taskItem.text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
             color = if (isChecked) onBackgroundColor.copy(alpha = 0.5f) else onBackgroundColor,
+            textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
     }
