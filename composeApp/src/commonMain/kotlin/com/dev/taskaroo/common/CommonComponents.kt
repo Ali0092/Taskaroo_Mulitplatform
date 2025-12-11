@@ -403,14 +403,16 @@ fun CapsuleFloatingActionButton(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.BottomEnd
     ) {
-        Box(modifier = Modifier
+        Box(
+            modifier = Modifier
             .size(56.dp)
             .clip(CircleShape)
             .border(BorderStroke(width = 1.dp, color = primaryColorVariant), shape = CircleShape)
             .clickable {
                 onAddClick()
             }
-            .background(primary), contentAlignment = Alignment.Center
+            .background(onBackgroundColor.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(Res.drawable.calendar),
