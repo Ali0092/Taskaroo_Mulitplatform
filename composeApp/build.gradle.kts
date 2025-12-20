@@ -16,7 +16,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -24,33 +24,10 @@ kotlin {
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
-            isStatic = true
+            isStatic = false
         }
     }
 
-//    cocoapods {
-//        // Required fields
-//        version = "1.0.0" // 👈 REQUIRED: pod version, can be anything semantic
-//        summary = "Shared Kotlin Multiplatform module"
-//        homepage = "https://example.com"
-//        ios.deploymentTarget = "15.3"
-//        //podfile = project.file("../iosApp/Podfile")
-//
-//        framework {
-//            baseName = "ComposeApp" // 👈 this must match your import name in Swift
-//            isStatic = false
-//        }
-//
-//        // Maps custom Xcode configuration to NativeBuildType
-//        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-//        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
-//
-//        // Firebase iOS pods
-//        pod("FirebaseAnalytics")
-//        pod("FirebaseCrashlytics")
-//        pod("FirebasePerformance")
-//    }
-    
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -76,7 +53,6 @@ kotlin {
         }
     }
 }
-
 android {
     namespace = "com.dev.taskaroo"
     compileSdk = libs.versions.android.compileSdk.get().toInt()

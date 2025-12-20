@@ -301,7 +301,7 @@ fun TaskCard(
 
                     // Progress Indicator
                     LinearProgressIndicator(
-                        progress = taskData.progress,
+                        progress = { taskData.progress },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),

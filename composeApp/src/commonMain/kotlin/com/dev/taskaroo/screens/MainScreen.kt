@@ -22,11 +22,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,7 +38,6 @@ import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.menu_icon
-import taskaroo.composeapp.generated.resources.search_icon
 
 class MainScreen : Screen {
 
@@ -65,7 +62,7 @@ class MainScreen : Screen {
                     title = "Fix Critical Production Bug",
                     subtitle = "Server downtime issue needs immediate attention",
                     category = "Urgent",
-                    deadline = "Today",
+                    deadline = "2024-12-11",
                     taskList = listOf(
                         TaskItem("1", "Identify root cause of server crash", isCompleted = true),
                         TaskItem("2", "Deploy hotfix to production"),
@@ -78,7 +75,7 @@ class MainScreen : Screen {
                     title = "Complete Project Proposal",
                     subtitle = "Finalize and submit the Q4 project proposal to the client",
                     category = "High",
-                    deadline = "Dec 15, 2024",
+                    deadline = "2024-12-15",
                     taskList = listOf(
                         TaskItem("4", "Review project requirements"),
                         TaskItem("5", "Create budget breakdown"),
@@ -91,7 +88,7 @@ class MainScreen : Screen {
                     title = "Team Meeting Preparation",
                     subtitle = "Weekly sync with the development team",
                     category = "Medium",
-                    deadline = "Dec 12, 2024",
+                    deadline = "2024-12-12",
                     taskList = listOf(
                         TaskItem("7", "Prepare agenda items", isCompleted = true),
                         TaskItem("8", "Review last week's action items")
@@ -103,7 +100,7 @@ class MainScreen : Screen {
                     title = "Code Review",
                     subtitle = "Review pull requests from team members",
                     category = "High",
-                    deadline = "Tomorrow",
+                    deadline = "2024-12-12",
                     taskList = listOf(
                         TaskItem("9", "Review authentication module"),
                         TaskItem("10", "Test API integration", isCompleted = true)
@@ -115,7 +112,7 @@ class MainScreen : Screen {
                     title = "Documentation Update",
                     subtitle = "Update API documentation for new endpoints",
                     category = "Low",
-                    deadline = "Dec 20, 2024",
+                    deadline = "2024-12-20",
                     taskList = listOf(
                         TaskItem("11", "Document new authentication flow"),
                         TaskItem("12", "Update endpoint examples"),

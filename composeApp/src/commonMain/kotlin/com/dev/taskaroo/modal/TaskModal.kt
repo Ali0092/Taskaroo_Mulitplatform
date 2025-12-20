@@ -11,7 +11,7 @@ data class TaskData(
     val title: String,
     val subtitle: String,
     val category: String, // "urgent", "medium", "high", "low"
-    val deadline: String, // Format: "Dec 15, 2024"
+    val deadline: String,
     val taskList: List<TaskItem>,
     var completedTasks: Int = 0
 ) {

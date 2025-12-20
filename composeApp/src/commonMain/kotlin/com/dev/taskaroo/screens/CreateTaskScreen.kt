@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,9 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -75,131 +72,14 @@ class CreateTaskScreen : Screen {
         var taskTitle by remember { mutableStateOf("") }
         var taskDescription by remember { mutableStateOf("") }
         var selectedPriority by remember { mutableStateOf("Medium") }
-        var selectedDate by remember { mutableStateOf("Dec 11, 2024") }
-        var showDatePicker by remember { mutableStateOf(false) }
+        var selectedDate by remember { mutableStateOf("2024-12-11") }
 
         // Task details checklist
         var taskDetailItems by remember { mutableStateOf(listOf("")) }
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
 
-        // Date selection state
-        val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-        var selectedYear by remember { mutableStateOf(2024) }
-        var selectedMonth by remember { mutableStateOf(11) } // December (0-indexed)
-        var selectedDay by remember { mutableStateOf(11) }
-
-        // Date picker dialog
-        if (showDatePicker) {
-            AlertDialog(
-                onDismissRequest = { showDatePicker = false },
-                title = {
-                    Text(
-                        text = "Select Date",
-                        color = onBackgroundColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Year selector
-                        Text(
-                            text = "Year: $selectedYear",
-                            color = onBackgroundColor,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            IconButton(
-                                onClick = { selectedYear-- },
-                                modifier = Modifier
-                                    .background(primary.copy(alpha = 0.1f), CircleShape)
-                            ) {
-                                Text("-", color = primary, fontWeight = FontWeight.Bold)
-                            }
-                            IconButton(
-                                onClick = { selectedYear++ },
-                                modifier = Modifier
-                                    .background(primary.copy(alpha = 0.1f), CircleShape)
-                            ) {
-                                Text("+", color = primary, fontWeight = FontWeight.Bold)
-                            }
-                        }
-
-                        // Month selector
-                        Text(
-                            text = "Month: ${months[selectedMonth]}",
-                            color = onBackgroundColor,
-                            fontWeight = FontWeight.Medium
-                        )
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(months.size) { index ->
-                                FilterChip(
-                                    onClick = { selectedMonth = index },
-                                    label = { Text(months[index]) },
-                                    selected = selectedMonth == index
-                                )
-                            }
-                        }
-
-                        // Day selector
-                        Text(
-                            text = "Day: $selectedDay",
-                            color = onBackgroundColor,
-                            fontWeight = FontWeight.Medium
-                        )
-                        val daysInMonth = when (selectedMonth) {
-                            1 -> if ((selectedYear % 4 == 0 && selectedYear % 100 != 0) || (selectedYear % 400 == 0)) 29 else 28
-                            0, 2, 4, 6, 7, 9, 11 -> 31
-                            else -> 30
-                        }
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            items(daysInMonth) { day ->
-                                FilterChip(
-                                    onClick = { selectedDay = day + 1 },
-                                    label = { Text("${day + 1}") },
-                                    selected = selectedDay == day + 1
-                                )
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            selectedDate = "${months[selectedMonth]} ${selectedDay}, ${selectedYear}"
-                            showDatePicker = false
-                        }
-                    ) {
-                        Text(
-                            text = "Select",
-                            color = primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showDatePicker = false }
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            color = onBackgroundColor.copy(alpha = 0.6f)
-                        )
-                    }
-                },
-                containerColor = Color.White,
-                shape = RoundedCornerShape(16.dp)
-            )
-        }
-
+  
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -313,44 +193,26 @@ class CreateTaskScreen : Screen {
                         color = onBackgroundColor
                     )
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = onBackgroundColor.copy(alpha = 0.05f),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { showDatePicker = true }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(Res.drawable.calendar),
-                                contentDescription = "Calendar",
-                                modifier = Modifier.size(20.dp)
-                            )
-
+                    OutlinedTextField(
+                        value = selectedDate,
+                        onValueChange = { selectedDate = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
                             Text(
-                                text = selectedDate,
-                                fontSize = 16.sp,
-                                color = onBackgroundColor,
-                                fontWeight = FontWeight.Medium
+                                text = "Enter deadline (e.g., 2024-12-15)",
+                                color = onBackgroundColor.copy(alpha = 0.5f)
                             )
-                        }
-
-                        Text(
-                            text = "Change",
-                            fontSize = 14.sp,
-                            color = primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = onBackgroundColor,
+                            unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                            cursorColor = onBackgroundColor
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
                 }
 
                 // Task Title
