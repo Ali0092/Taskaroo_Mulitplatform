@@ -132,7 +132,7 @@ class MainScreen : Screen {
                 // Floating Action Button
                 CapsuleFloatingActionButton(
                     onAddClick = {
-                        navigator.push(CreateTaskScreen())
+                        navigator.push(CalendarScreen())
                     },
                 )
             }
