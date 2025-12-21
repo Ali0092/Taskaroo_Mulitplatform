@@ -89,19 +89,19 @@ class MainScreen : Screen {
 //                )
 
                 // Filter tasks based on selected category
-                val filteredTasks = when (selectedCategory) {
-                    "Work" -> sampleTasks.filter { it.category in listOf("High", "Medium") }
-                    "Personal" -> sampleTasks.filter { it.category == "Low" }
-                    "Shopping" -> sampleTasks.filter { it.category == "Medium" }
-                    "Health" -> sampleTasks.filter { it.category in listOf("Urgent", "High") }
-                    else -> sampleTasks
-                }
+//                val filteredTasks = when (selectedCategory) {
+//                    "Work" -> sampleTasks.filter { it.category in listOf("High", "Medium") }
+//                    "Personal" -> sampleTasks.filter { it.category == "Low" }
+//                    "Shopping" -> sampleTasks.filter { it.category == "Medium" }
+//                    "Health" -> sampleTasks.filter { it.category in listOf("Urgent", "High") }
+//                    else -> sampleTasks
+//                }
 
                 // LazyColumn with task cards
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(filteredTasks) { task ->
+                    items(sampleTasks) { task ->
                         TaskCard(
                             taskData = task,
                             onTaskItemToggle = { taskId, isChecked ->

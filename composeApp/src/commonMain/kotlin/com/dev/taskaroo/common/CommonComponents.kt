@@ -264,9 +264,9 @@ fun TaskCardConcise(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Deadline: "+taskData.deadline,
-                fontSize = 14.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor
+                color = primaryColorVariant
             )
 
         }
@@ -287,9 +287,8 @@ fun TaskCard(
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
+            modifier = Modifier.fillMaxWidth()
+                .then(if (taskData.taskList.isNotEmpty()) Modifier.padding(top = 16.dp) else Modifier.padding(vertical = 16.dp))
         ) {
             // Title and Subtitle
             Text(
@@ -319,7 +318,8 @@ fun TaskCard(
                     .padding(start = 16.dp, end = 16.dp, top = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ) {
+            )
+            {
                 // Priority Chip
                 val (priorityColor, priorityBackground) = when (taskData.category.lowercase()) {
                     "urgent" -> urgentPriorityColor to urgentPriorityBackground

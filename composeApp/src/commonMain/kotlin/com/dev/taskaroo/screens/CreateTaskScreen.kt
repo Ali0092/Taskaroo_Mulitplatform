@@ -1,6 +1,5 @@
 package com.dev.taskaroo.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,18 +18,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -49,6 +42,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
+import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
@@ -57,8 +51,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
-import taskaroo.composeapp.generated.resources.back_button
-import taskaroo.composeapp.generated.resources.calendar
+import taskaroo.composeapp.generated.resources.add_icon
 import taskaroo.composeapp.generated.resources.close_icon
 
 class CreateTaskScreen : Screen {
@@ -79,60 +72,30 @@ class CreateTaskScreen : Screen {
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
 
-  
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Make your Task",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = onBackgroundColor
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                navigator.pop()
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(Res.drawable.back_button),
-                                contentDescription = "Back",
-                                tint = onBackgroundColor
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                // Handle task creation logic here
-                                navigator.pop()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Create Task",
-                                tint = primary
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = backgroundColor
-                    )
-                )
-            }
-        ) { innerPaddings ->
+
+        Scaffold { innerPaddings ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(backgroundColor)
                     .padding(innerPaddings)
-                    .padding(horizontal = 16.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+
+                TopAppBar(
+                    title = "Make your Task",
+                    canShowNavigationIcon = true,
+                    otherIcon = Res.drawable.close_icon,
+                    onBackButtonClick = {
+                        navigator.pop()
+                    },
+                    onOtherIconClick = {
+                        navigator.push(CreateTaskScreen())
+                    }
+                )
+
 
                 // Priority Selection - Moved to top
                 Column(

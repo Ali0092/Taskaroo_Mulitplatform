@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,7 +34,7 @@ import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primaryLiteColorVariant
-import com.dev.taskaroo.utils.Utils.sampleTasks
+import com.dev.taskaroo.utils.Utils.calendarScreenSampleTasks
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 
@@ -80,10 +79,9 @@ class CalendarScreen : Screen {
                     .fillMaxSize()
                     .background(backgroundColor)
                     .padding(innerPaddings)
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
-            )
-            {
+            ) {
                 TopAppBar(
                     title = "Schedule",
                     canShowNavigationIcon = true,
@@ -112,7 +110,7 @@ class CalendarScreen : Screen {
 
                 Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().verticalScroll(rememberScrollState())) {
                     repeat(hoursList.size) { hour ->
-                        HourColumnItem(hour = hoursList[hour], items = sampleTasks)
+                        HourColumnItem(hour = hoursList[hour], items = calendarScreenSampleTasks)
                     }
                 }
 
@@ -131,7 +129,7 @@ fun HourColumnItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(top = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.Top) {
             Text(
@@ -141,6 +139,7 @@ fun HourColumnItem(
                 color = onBackgroundColor,
                 textAlign = TextAlign.End
             )
+
 
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -152,18 +151,18 @@ fun HourColumnItem(
                         .fillMaxWidth(1f)
                         .background(primaryLiteColorVariant)
                 )
-
-                repeat(items.size) { index ->
-                    TaskCardConcise(
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                        taskData = items[index]
-                    )
+                if (hour == "03:00\nAM") {
+                    repeat(items.size) { index ->
+                        TaskCardConcise(
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            taskData = items[index]
+                        )
+                    }
                 }
             }
-        }
-
-
-
 
     }
+
+
+}
 }
