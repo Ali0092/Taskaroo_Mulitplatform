@@ -145,7 +145,7 @@ fun Content(
 ) {
     Row(
         modifier = Modifier
-            .padding(vertical = 16.dp)
+            .padding(top = 16.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -183,7 +183,7 @@ fun RowScope.ContentItem(
     ) {
         Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = primaryColorVariant))
         Spacer(Modifier.height(8.dp))
-        Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = onBackgroundColor))
+        Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = onBackgroundColor))
     }
 }
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -58,7 +60,6 @@ import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.onBackgroundColor
-import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.urgentPriorityBackground
@@ -66,7 +67,60 @@ import com.dev.taskaroo.urgentPriorityColor
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
+import taskaroo.composeapp.generated.resources.back_button
 import taskaroo.composeapp.generated.resources.calendar
+
+@Composable
+fun TopAppBar(
+    title: String,
+    canShowNavigationIcon: Boolean,
+    otherIcon: DrawableResource? = null,
+    onBackButtonClick: () -> Unit = {},
+    onOtherIconClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        // CanShowNavigationIcon
+        if (canShowNavigationIcon) {
+            IconButton(
+                onClick = {
+                    onBackButtonClick()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.back_button),
+                    contentDescription = "Back",
+                    tint = onBackgroundColor
+                )
+            }
+        }
+
+        // Main title
+        Text(
+            modifier = Modifier.weight(1f),
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        // Other icon
+        if (otherIcon != null) {
+            Spacer(modifier = Modifier.width(12.dp))
+
+            IconSurface(
+                icon = otherIcon,
+                getAddButtonClick = {
+                    onOtherIconClick()
+                }
+            )
+        }
+    }
+
+}
 
 @Composable
 fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
@@ -80,10 +134,10 @@ fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
         shape = CircleShape,
         border = BorderStroke(1.dp, color = primaryLiteColorVariant)
     ) {
-        Box(modifier = Modifier.size(45.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
             Icon(
                 modifier = Modifier
-                    .size(24.dp),
+                    .size(20.dp),
                 painter = painterResource(icon),
                 contentDescription = null,
                 tint = onBackgroundColor
@@ -160,6 +214,65 @@ fun TaskChipRow(
         }
     }
 }
+
+
+@Composable
+fun TaskCardConcise(
+    modifier: Modifier,
+    taskData: TaskData,
+    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> }
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Title and Subtitle
+            Text(
+                modifier = Modifier.wrapContentWidth(),
+                text = taskData.title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = onBackgroundColor
+            )
+
+            // Task Details Section
+            if (taskData.taskList.isNotEmpty()) {
+                // Task Items
+                Column(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    taskData.taskList.forEach { taskItem ->
+                        TaskItemRow(
+                            taskItem = taskItem,
+                            isConciseItem = true,
+                            onToggle = { isChecked ->
+                                onTaskItemToggle(taskItem.id, isChecked)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = taskData.deadline,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = onBackgroundColor
+            )
+
+        }
+    }
+}
+
 
 @Composable
 fun TaskCard(
@@ -405,13 +518,13 @@ fun CapsuleFloatingActionButton(
     ) {
         Box(
             modifier = Modifier
-            .size(56.dp)
-            .clip(CircleShape)
-            .border(BorderStroke(width = 1.dp, color = primaryColorVariant), shape = CircleShape)
-            .clickable {
-                onAddClick()
-            }
-            .background(onBackgroundColor.copy(alpha = 0.5f)),
+                .size(56.dp)
+                .clip(CircleShape)
+                .border(BorderStroke(width = 1.dp, color = primaryColorVariant), shape = CircleShape)
+                .clickable {
+                    onAddClick()
+                }
+                .background(onBackgroundColor.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -426,6 +539,7 @@ fun CapsuleFloatingActionButton(
 @Composable
 fun TaskItemRow(
     taskItem: TaskItem,
+    isConciseItem: Boolean = false,
     onToggle: (Boolean) -> Unit
 ) {
     var isChecked by remember { mutableStateOf(taskItem.isCompleted) }
@@ -442,12 +556,12 @@ fun TaskItemRow(
                 isChecked = checked
                 onToggle(checked)
             },
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(if (isConciseItem) 13.dp else 20.dp)
         )
 
         Text(
             text = taskItem.text,
-            fontSize = 16.sp,
+            fontSize = if (isConciseItem) 13.sp else 16.sp,
             fontWeight = FontWeight.Medium,
             color = if (isChecked) onBackgroundColor.copy(alpha = 0.5f) else onBackgroundColor,
             textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
