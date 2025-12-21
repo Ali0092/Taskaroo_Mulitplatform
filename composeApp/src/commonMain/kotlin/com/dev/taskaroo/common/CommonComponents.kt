@@ -231,7 +231,7 @@ fun TaskCardConcise(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp, horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Title and Subtitle
             Text(
@@ -247,7 +247,7 @@ fun TaskCardConcise(
                 // Task Items
                 Column(
                     modifier = Modifier.padding(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     taskData.taskList.forEach { taskItem ->
                         TaskItemRow(
@@ -263,7 +263,7 @@ fun TaskCardConcise(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = taskData.deadline,
+                text = "Deadline: "+taskData.deadline,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 color = onBackgroundColor

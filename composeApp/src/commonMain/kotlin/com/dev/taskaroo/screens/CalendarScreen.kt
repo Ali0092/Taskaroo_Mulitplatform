@@ -92,7 +92,7 @@ class CalendarScreen : Screen {
                         navigator.pop()
                     },
                     onOtherIconClick = {
-
+                        navigator.push(CreateTaskScreen())
                     }
                 )
 
