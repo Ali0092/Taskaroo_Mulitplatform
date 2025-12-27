@@ -1,6 +1,7 @@
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,25 +11,33 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
+import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.common.CapsuleFloatingActionButton
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow
 import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
-import com.dev.taskaroo.utils.Utils.sampleTasks
+import com.dev.taskaroo.utils.currentTimeMillis
+import kotlinx.coroutines.launch
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.menu_icon
 
@@ -52,6 +61,32 @@ class MainScreen : Screen {
         // State for selected category
         var selectedCategory by remember { mutableStateOf("Work") }
         val navigator = LocalNavigator.currentOrThrow
+        val databaseHelper = LocalDatabase.current
+        val coroutineScope = rememberCoroutineScope()
+        var tasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+        var isLoading by remember { mutableStateOf(true) }
+
+        // Load tasks when screen appears
+        LaunchedEffect(Unit) {
+            try {
+                val allTasks = databaseHelper.getAllTasks()
+                val currentTime = currentTimeMillis()
+
+                // Filter: only upcoming tasks (timestampMillis >= current time)
+                // Sort: by deadline ascending (closest first)
+                tasks = allTasks
+                    .filter { it.timestampMillis >= currentTime }
+                    .sortedBy { it.timestampMillis }
+
+                println("MainScreen: Loaded ${tasks.size} upcoming tasks from ${allTasks.size} total")
+            } catch (e: Exception) {
+                println("MainScreen: Error loading tasks - ${e.message}")
+                e.printStackTrace()
+                tasks = emptyList()
+            } finally {
+                isLoading = false
+            }
+        }
 
         Scaffold(
             floatingActionButton = {
@@ -101,29 +136,78 @@ class MainScreen : Screen {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(sampleTasks) { task ->
-                        TaskCard(
-                            taskData = task,
-                            onTaskItemToggle = { taskId, isChecked ->
-                                // Find the task in the original list and update its completion status
-//                                val taskIndex = sampleTasks.indexOfFirst { it.id == task.id }
-//                                if (taskIndex != -1) {
-//                                    val currentTask = sampleTasks[taskIndex]
-//                                    val updatedTaskList = currentTask.taskList.map { item ->
-//                                        if (item.id == taskId) {
-//                                            item.copy(isCompleted = isChecked)
-//                                        } else {
-//                                            item
-//                                        }
-//                                    }
-//                                    val completedCount = updatedTaskList.count { it.isCompleted }
-//                                    sampleTasks[taskIndex] = currentTask.copy(
-//                                        taskList = updatedTaskList,
-//                                        completedTasks = completedCount
-//                                    )
-//                                }
+                    if (isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Loading tasks...",
+                                    color = onBackgroundColor.copy(alpha = 0.5f)
+                                )
                             }
-                        )
+                        }
+                    } else if (tasks.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No upcoming tasks!\nTap the + button to create one.",
+                                    color = onBackgroundColor.copy(alpha = 0.5f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    } else {
+                        items(tasks, key = { it.timestampMillis }) { task ->
+                            TaskCard(
+                                taskData = task,
+                                onTaskItemToggle = { taskItemId, isChecked ->
+                                    // Update task item completion in database
+                                    coroutineScope.launch {
+                                        try {
+                                            databaseHelper.toggleTaskItemCompletion(taskItemId, isChecked)
+
+                                            // Update local state
+                                            tasks = tasks.map { currentTask ->
+                                                if (currentTask.timestampMillis == task.timestampMillis) {
+                                                    val updatedTaskList = currentTask.taskList.map { item ->
+                                                        if (item.id == taskItemId) {
+                                                            item.copy(isCompleted = isChecked)
+                                                        } else {
+                                                            item
+                                                        }
+                                                    }
+                                                    val completedCount = updatedTaskList.count { it.isCompleted }
+
+                                                    // Update completed count in DB
+                                                    databaseHelper.updateCompletedCount(
+                                                        currentTask.timestampMillis,
+                                                        completedCount
+                                                    )
+
+                                                    currentTask.copy(
+                                                        taskList = updatedTaskList,
+                                                        completedTasks = completedCount
+                                                    )
+                                                } else {
+                                                    currentTask
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            println("MainScreen: Error toggling task item - ${e.message}")
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

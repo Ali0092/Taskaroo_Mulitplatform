@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.Navigator
+import com.dev.taskaroo.database.ProvideDatabaseHelper
 import com.dev.taskaroo.screens.IntroScreen
 import com.dev.taskaroo.screens.MainScreen
 import org.jetbrains.compose.resources.painterResource
@@ -26,7 +27,9 @@ import taskaroo.composeapp.generated.resources.compose_multiplatform
 @Preview
 fun App() {
     MaterialTheme {
-        Navigator(screen = MainScreen())
+        ProvideDatabaseHelper {
+            Navigator(screen = MainScreen())
+        }
     }
 }
 

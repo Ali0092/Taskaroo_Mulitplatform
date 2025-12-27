@@ -38,39 +38,59 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.KeyboardType
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.database.LocalDatabase
+import com.dev.taskaroo.modal.TaskData
+import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 import taskaroo.composeapp.generated.resources.close_icon
+import taskaroo.composeapp.generated.resources.tick_icon
+import kotlin.time.ExperimentalTime
 
 class CreateTaskScreen : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val databaseHelper = LocalDatabase.current
 
         // Form states
         var taskTitle by remember { mutableStateOf("") }
         var taskDescription by remember { mutableStateOf("") }
         var selectedPriority by remember { mutableStateOf("Medium") }
-        var selectedDate by remember { mutableStateOf("2024-12-11") }
+        var selectedDate by remember {
+            val today = todayDate()
+            mutableStateOf("${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}")
+        }
+        var selectedHour by remember { mutableStateOf(12) }  // 0-23
+        var selectedMinute by remember { mutableStateOf(0) } // 0-59
 
         // Task details checklist
         var taskDetailItems by remember { mutableStateOf(listOf("")) }
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
+
+        // Error handling and loading state
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+        var isSaving by remember { mutableStateOf(false) }
 
 
         Scaffold { innerPaddings ->
@@ -87,15 +107,145 @@ class CreateTaskScreen : Screen {
                 TopAppBar(
                     title = "Make your Task",
                     canShowNavigationIcon = true,
-                    otherIcon = Res.drawable.close_icon,
+                    otherIcon = Res.drawable.tick_icon,
                     onBackButtonClick = {
                         navigator.pop()
                     },
                     onOtherIconClick = {
-                        navigator.push(CreateTaskScreen())
+                        if (taskTitle.isNotBlank() && selectedDate.isNotBlank()) {
+                            if (isSaving) return@TopAppBar  // Prevent double-clicks
+
+                            coroutineScope.launch {
+                                try {
+                                    isSaving = true
+                                    errorMessage = null
+
+                                    // Parse date from selectedDate string (format: YYYY-MM-DD)
+                                    val dateParts = selectedDate.split("-")
+                                    if (dateParts.size == 3) {
+                                        val year = dateParts[0].toIntOrNull() ?: run {
+                                            errorMessage = "Invalid year in date"
+                                            isSaving = false
+                                            return@launch
+                                        }
+                                        val month = dateParts[1].toIntOrNull() ?: run {
+                                            errorMessage = "Invalid month in date"
+                                            isSaving = false
+                                            return@launch
+                                        }
+                                        val day = dateParts[2].toIntOrNull() ?: run {
+                                            errorMessage = "Invalid day in date"
+                                            isSaving = false
+                                            return@launch
+                                        }
+
+                                        // Validate date components
+                                        if (month !in 1..12) {
+                                            errorMessage = "Month must be between 1-12"
+                                            isSaving = false
+                                            return@launch
+                                        }
+                                        if (day !in 1..31) {
+                                            errorMessage = "Day must be between 1-31"
+                                            isSaving = false
+                                            return@launch
+                                        }
+
+                                        // Create LocalDateTime with selected date and time
+                                        val localDateTime = LocalDateTime(
+                                            year, month, day,
+                                            selectedHour, selectedMinute, 0, 0
+                                        )
+
+                                        // Convert to timestamp in milliseconds
+                                        val timestampMillis = localDateTime
+                                            .toInstant(TimeZone.currentSystemDefault())
+                                            .toEpochMilliseconds()
+
+                                        println("CreateTask: Creating task with timestamp: $timestampMillis")
+
+                                        // Create task items from checklist
+                                        val taskItems = taskDetailItems
+                                            .filter { it.isNotBlank() }
+                                            .mapIndexed { index, text ->
+                                                TaskItem(
+                                                    id = "${timestampMillis}_item_$index",
+                                                    text = text,
+                                                    isCompleted = false
+                                                )
+                                            }
+
+                                        println("CreateTask: Task items count: ${taskItems.size}")
+
+                                        // Create new task
+                                        val newTask = TaskData(
+                                            timestampMillis = timestampMillis,
+                                            title = taskTitle,
+                                            subtitle = taskDescription,
+                                            category = selectedPriority,
+                                            taskList = taskItems,
+                                            completedTasks = 0
+                                        )
+
+                                        println("CreateTask: About to insert task: ${newTask.title}")
+
+                                        // Save to database
+                                        databaseHelper.insertTask(newTask)
+
+                                        println("CreateTask: Task inserted successfully!")
+
+                                        // Verify insertion
+                                        val insertedTask = databaseHelper.getTaskByTimestamp(timestampMillis)
+                                        if (insertedTask != null) {
+                                            println("CreateTask: Verification successful - task found in DB")
+                                        } else {
+                                            println("CreateTask: WARNING - task not found after insertion!")
+                                            errorMessage = "Task saved but verification failed"
+                                        }
+
+                                        // Navigate back only on success
+                                        navigator.pop()
+                                    } else {
+                                        errorMessage = "Invalid date format. Use YYYY-MM-DD"
+                                        isSaving = false
+                                    }
+                                } catch (e: Exception) {
+                                    println("CreateTask: ERROR - ${e.message}")
+                                    e.printStackTrace()
+                                    errorMessage = "Failed to save task: ${e.message}"
+                                    isSaving = false
+                                }
+                            }
+                        } else {
+                            // Show validation error
+                            errorMessage = when {
+                                taskTitle.isBlank() -> "Please enter a task title"
+                                selectedDate.isBlank() -> "Please enter a deadline date"
+                                else -> "Please fill in required fields"
+                            }
+                        }
                     }
                 )
 
+                // Error message display
+                errorMessage?.let { message ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = Color(0xFFFFCDD2), // Light red background
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = message,
+                            color = Color(0xFFC62828), // Dark red text
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
 
                 // Priority Selection - Moved to top
                 Column(
@@ -176,6 +326,67 @@ class CreateTaskScreen : Screen {
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
+                }
+
+                // Time Selection
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Time",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = onBackgroundColor
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Hour picker
+                        OutlinedTextField(
+                            value = selectedHour.toString().padStart(2, '0'),
+                            onValueChange = { value ->
+                                value.toIntOrNull()?.let { hour ->
+                                    if (hour in 0..23) selectedHour = hour
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            label = { Text("Hour (00-23)", fontSize = 12.sp) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = onBackgroundColor,
+                                unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                                cursorColor = onBackgroundColor
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        // Minute picker
+                        OutlinedTextField(
+                            value = selectedMinute.toString().padStart(2, '0'),
+                            onValueChange = { value ->
+                                value.toIntOrNull()?.let { minute ->
+                                    if (minute in 0..59) selectedMinute = minute
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            label = { Text("Minute (00-59)", fontSize = 12.sp) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = onBackgroundColor,
+                                unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                                cursorColor = onBackgroundColor
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
                 }
 
                 // Task Title

@@ -35,18 +35,15 @@ import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.utils.todayDate
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.left_arrow
 import taskaroo.composeapp.generated.resources.right_arrow
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 
 @Composable
@@ -205,9 +202,8 @@ data class CalendarUiModel(
 
 class CalendarDataSource {
 
-    @OptIn(ExperimentalTime::class)
     val today: LocalDate
-        get() = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        get() = todayDate()
 
     fun getData(
         startDate: LocalDate = today,

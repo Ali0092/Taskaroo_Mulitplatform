@@ -8,13 +8,15 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+    androidTarget()
+
+    compilerOptions {
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
     }
 
     listOf(
@@ -32,6 +34,13 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
+            // SQLDelight Android Driver
+            implementation(libs.sqldelight.android)
+        }
+        iosMain.dependencies {
+            // SQLDelight Native Driver
+            implementation(libs.sqldelight.native)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -50,6 +59,10 @@ kotlin {
 
             // Calendar
             implementation(libs.kotlinx.datetime)
+
+            // SQLDelight
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.coroutines)
 
         }
         commonTest.dependencies {
@@ -86,5 +99,13 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+sqldelight {
+    databases {
+        create("TaskDatabase") {
+            packageName.set("com.dev.taskaroo.database")
+        }
+    }
 }
 

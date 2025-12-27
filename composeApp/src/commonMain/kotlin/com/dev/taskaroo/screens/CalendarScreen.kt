@@ -18,6 +18,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -31,38 +36,41 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.TaskCardConcise
 import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primaryLiteColorVariant
-import com.dev.taskaroo.utils.Utils.calendarScreenSampleTasks
+import com.dev.taskaroo.utils.DateTimeUtils
+import com.dev.taskaroo.utils.todayDate
+import kotlinx.datetime.LocalDate
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 
 val hoursList = listOf(
-    "01:00\nAM",
-    "02:00\nAM",
-    "03:00\nAM",
-    "04:00\nAM",
-    "05:00\nAM",
-    "06:00\nAM",
-    "07:00\nAM",
-    "08:00\nAM",
-    "09:00\nAM",
-    "10:00\nAM",
-    "11:00\nAM",
-    "12:00\nPM",
-    "01:00\nPM",
-    "02:00\nPM",
-    "03:00\nPM",
-    "04:00\nPM",
-    "05:00\nPM",
-    "06:00\nPM",
-    "07:00\nPM",
-    "08:00\nPM",
-    "09:00\nPM",
-    "10:00\nPM",
-    "11:00\nPM",
-    "12:00\nPM",
+    "12:00\nAM",  // Midnight (hour 0)
+    "01:00\nAM",  // hour 1
+    "02:00\nAM",  // hour 2
+    "03:00\nAM",  // hour 3
+    "04:00\nAM",  // hour 4
+    "05:00\nAM",  // hour 5
+    "06:00\nAM",  // hour 6
+    "07:00\nAM",  // hour 7
+    "08:00\nAM",  // hour 8
+    "09:00\nAM",  // hour 9
+    "10:00\nAM",  // hour 10
+    "11:00\nAM",  // hour 11
+    "12:00\nPM",  // Noon (hour 12)
+    "01:00\nPM",  // hour 13
+    "02:00\nPM",  // hour 14
+    "03:00\nPM",  // hour 15
+    "04:00\nPM",  // hour 16
+    "05:00\nPM",  // hour 17
+    "06:00\nPM",  // hour 18
+    "07:00\nPM",  // hour 19
+    "08:00\nPM",  // hour 20
+    "09:00\nPM",  // hour 21
+    "10:00\nPM",  // hour 22
+    "11:00\nPM",  // hour 23
 )
 
 class CalendarScreen : Screen {
@@ -72,6 +80,31 @@ class CalendarScreen : Screen {
     override fun Content() {
 
         val navigator = LocalNavigator.currentOrThrow
+        val databaseHelper = LocalDatabase.current
+
+        // Selected date state
+        var selectedDate by remember {
+            mutableStateOf(todayDate())
+        }
+
+        // Tasks for selected date
+        var tasksForSelectedDate by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+
+        // Load tasks when date changes
+        LaunchedEffect(selectedDate) {
+            val startMillis = DateTimeUtils.getStartOfDayMillis(selectedDate)
+            val endMillis = DateTimeUtils.getEndOfDayMillis(selectedDate)
+            tasksForSelectedDate = databaseHelper.getTasksForDate(startMillis, endMillis)
+        }
+
+        // Group tasks by hour slot
+        fun groupTasksByHour(tasks: List<TaskData>): Map<Int, List<TaskData>> {
+            return tasks
+                .groupBy { DateTimeUtils.getHourSlotIndex(it.timestampMillis) }
+                .mapValues { (_, tasksInHour) ->
+                    tasksInHour.sortedBy { it.timestampMillis }  // Ascending order
+                }
+        }
 
         Scaffold { innerPaddings ->
             Column(
@@ -94,7 +127,8 @@ class CalendarScreen : Screen {
                     }
                 )
 
-                HorizontalCalendar { selectedDate ->
+                HorizontalCalendar { newSelectedDate ->
+                    selectedDate = newSelectedDate
                     println("Selected date: $selectedDate")
                 }
 
@@ -108,9 +142,18 @@ class CalendarScreen : Screen {
                     )
                 )
 
+                // Group tasks by hour
+                val tasksByHour = remember(tasksForSelectedDate) {
+                    groupTasksByHour(tasksForSelectedDate)
+                }
+
                 Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().verticalScroll(rememberScrollState())) {
-                    repeat(hoursList.size) { hour ->
-                        HourColumnItem(hour = hoursList[hour], items = calendarScreenSampleTasks)
+                    hoursList.forEachIndexed { index, hourString ->
+                        val tasksForThisHour = tasksByHour[index] ?: emptyList()
+                        HourColumnItem(
+                            hour = hourString,
+                            items = tasksForThisHour
+                        )
                     }
                 }
 
@@ -151,13 +194,12 @@ fun HourColumnItem(
                         .fillMaxWidth(1f)
                         .background(primaryLiteColorVariant)
                 )
-                if (hour == "03:00\nAM") {
-                    repeat(items.size) { index ->
-                        TaskCardConcise(
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                            taskData = items[index]
-                        )
-                    }
+                // Render all tasks for this hour slot
+                items.forEach { taskData ->
+                    TaskCardConcise(
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        taskData = taskData
+                    )
                 }
             }
 
