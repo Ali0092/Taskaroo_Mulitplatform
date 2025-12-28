@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,9 +55,11 @@ import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
@@ -64,13 +67,34 @@ import taskaroo.composeapp.generated.resources.close_icon
 import taskaroo.composeapp.generated.resources.tick_icon
 import kotlin.time.ExperimentalTime
 
-class CreateTaskScreen : Screen {
+class CreateTaskScreen(
+    private val taskTimestampToEdit: Long? = null
+) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val databaseHelper = LocalDatabase.current
+
+        // Determine if we're in edit mode
+        val isEditMode = taskTimestampToEdit != null
+        var existingTask by remember { mutableStateOf<TaskData?>(null) }
+        var isLoadingTask by remember { mutableStateOf(isEditMode) }
+
+        // Load existing task if in edit mode
+        LaunchedEffect(taskTimestampToEdit) {
+            if (taskTimestampToEdit != null) {
+                try {
+                    isLoadingTask = true
+                    existingTask = databaseHelper.getTaskByTimestamp(taskTimestampToEdit)
+                    isLoadingTask = false
+                } catch (e: Exception) {
+                    println("EditTask: Error loading task - ${e.message}")
+                    isLoadingTask = false
+                }
+            }
+        }
 
         // Form states
         var taskTitle by remember { mutableStateOf("") }
@@ -92,6 +116,28 @@ class CreateTaskScreen : Screen {
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var isSaving by remember { mutableStateOf(false) }
 
+        // Pre-fill form when task is loaded in edit mode
+        LaunchedEffect(existingTask) {
+            existingTask?.let { task ->
+                taskTitle = task.title
+                taskDescription = task.subtitle
+                selectedPriority = task.category
+
+                // Extract date and time from timestamp
+                val instant = Instant.fromEpochMilliseconds(task.timestampMillis)
+                val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+                selectedDate = "${dateTime.year}-${dateTime.monthNumber.toString().padStart(2, '0')}-${dateTime.dayOfMonth.toString().padStart(2, '0')}"
+                selectedHour = dateTime.hour
+                selectedMinute = dateTime.minute
+
+                // Pre-fill checklist items
+                taskDetailItems = if (task.taskList.isEmpty()) {
+                    listOf("")
+                } else {
+                    task.taskList.map { it.text }
+                }
+            }
+        }
 
         Scaffold { innerPaddings ->
             Column(
@@ -105,7 +151,7 @@ class CreateTaskScreen : Screen {
             ) {
 
                 TopAppBar(
-                    title = "Make your Task",
+                    title = if (isEditMode) "Edit your Task" else "Make your Task",
                     canShowNavigationIcon = true,
                     otherIcon = Res.drawable.tick_icon,
                     onBackButtonClick = {
@@ -157,50 +203,75 @@ class CreateTaskScreen : Screen {
                                             selectedHour, selectedMinute, 0, 0
                                         )
 
-                                        // Convert to timestamp in milliseconds
-                                        val timestampMillis = localDateTime
-                                            .toInstant(TimeZone.currentSystemDefault())
-                                            .toEpochMilliseconds()
+                                        // Convert to timestamp in milliseconds (or use existing in edit mode)
+                                        val timestampMillis = if (isEditMode) {
+                                            taskTimestampToEdit!!  // Use existing timestamp in edit mode
+                                        } else {
+                                            localDateTime
+                                                .toInstant(TimeZone.currentSystemDefault())
+                                                .toEpochMilliseconds()
+                                        }
 
-                                        println("CreateTask: Creating task with timestamp: $timestampMillis")
+                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: ${if (isEditMode) "Updating" else "Creating"} task with timestamp: $timestampMillis")
 
                                         // Create task items from checklist
-                                        val taskItems = taskDetailItems
-                                            .filter { it.isNotBlank() }
-                                            .mapIndexed { index, text ->
-                                                TaskItem(
-                                                    id = "${timestampMillis}_item_$index",
-                                                    text = text,
-                                                    isCompleted = false
-                                                )
-                                            }
+                                        val taskItems = if (isEditMode) {
+                                            // In edit mode, preserve existing task item IDs and completion status
+                                            val existingItems = existingTask?.taskList ?: emptyList()
+                                            taskDetailItems
+                                                .filter { it.isNotBlank() }
+                                                .mapIndexed { index, text ->
+                                                    // Try to find matching existing item by index or text
+                                                    val existingItem = existingItems.getOrNull(index)
+                                                    val itemId = existingItem?.id ?: "${timestampMillis}_item_$index"
+                                                    val isCompleted = if (existingItem?.text == text) {
+                                                        existingItem.isCompleted
+                                                    } else {
+                                                        false  // New or modified items are not completed
+                                                    }
 
-                                        println("CreateTask: Task items count: ${taskItems.size}")
+                                                    TaskItem(
+                                                        id = itemId,
+                                                        text = text,
+                                                        isCompleted = isCompleted
+                                                    )
+                                                }
+                                        } else {
+                                            // Create mode - all new items
+                                            taskDetailItems
+                                                .filter { it.isNotBlank() }
+                                                .mapIndexed { index, text ->
+                                                    TaskItem(
+                                                        id = "${timestampMillis}_item_$index",
+                                                        text = text,
+                                                        isCompleted = false
+                                                    )
+                                                }
+                                        }
 
-                                        // Create new task
-                                        val newTask = TaskData(
+                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: Task items count: ${taskItems.size}")
+
+                                        val completedCount = taskItems.count { it.isCompleted }
+
+                                        // Create task data
+                                        val taskData = TaskData(
                                             timestampMillis = timestampMillis,
                                             title = taskTitle,
                                             subtitle = taskDescription,
                                             category = selectedPriority,
                                             taskList = taskItems,
-                                            completedTasks = 0
+                                            completedTasks = completedCount
                                         )
 
-                                        println("CreateTask: About to insert task: ${newTask.title}")
+                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: About to ${if (isEditMode) "update" else "insert"} task: ${taskData.title}")
 
                                         // Save to database
-                                        databaseHelper.insertTask(newTask)
-
-                                        println("CreateTask: Task inserted successfully!")
-
-                                        // Verify insertion
-                                        val insertedTask = databaseHelper.getTaskByTimestamp(timestampMillis)
-                                        if (insertedTask != null) {
-                                            println("CreateTask: Verification successful - task found in DB")
+                                        if (isEditMode) {
+                                            databaseHelper.updateTask(taskData)
+                                            println("EditTask: Task updated successfully!")
                                         } else {
-                                            println("CreateTask: WARNING - task not found after insertion!")
-                                            errorMessage = "Task saved but verification failed"
+                                            databaseHelper.insertTask(taskData)
+                                            println("CreateTask: Task inserted successfully!")
                                         }
 
                                         // Navigate back only on success
@@ -308,8 +379,9 @@ class CreateTaskScreen : Screen {
 
                     OutlinedTextField(
                         value = selectedDate,
-                        onValueChange = { selectedDate = it },
+                        onValueChange = { if (!isEditMode) selectedDate = it },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !isEditMode,
                         placeholder = {
                             Text(
                                 text = "Enter deadline (e.g., 2024-12-15)",
@@ -319,7 +391,9 @@ class CreateTaskScreen : Screen {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = onBackgroundColor,
                             unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                            cursorColor = onBackgroundColor
+                            cursorColor = onBackgroundColor,
+                            disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                            disabledTextColor = onBackgroundColor
                         ),
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Next
@@ -347,16 +421,21 @@ class CreateTaskScreen : Screen {
                         OutlinedTextField(
                             value = selectedHour.toString().padStart(2, '0'),
                             onValueChange = { value ->
-                                value.toIntOrNull()?.let { hour ->
-                                    if (hour in 0..23) selectedHour = hour
+                                if (!isEditMode) {
+                                    value.toIntOrNull()?.let { hour ->
+                                        if (hour in 0..23) selectedHour = hour
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f),
+                            enabled = !isEditMode,
                             label = { Text("Hour (00-23)", fontSize = 12.sp) },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = onBackgroundColor,
                                 unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                cursorColor = onBackgroundColor
+                                cursorColor = onBackgroundColor,
+                                disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                                disabledTextColor = onBackgroundColor
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number,
@@ -369,16 +448,21 @@ class CreateTaskScreen : Screen {
                         OutlinedTextField(
                             value = selectedMinute.toString().padStart(2, '0'),
                             onValueChange = { value ->
-                                value.toIntOrNull()?.let { minute ->
-                                    if (minute in 0..59) selectedMinute = minute
+                                if (!isEditMode) {
+                                    value.toIntOrNull()?.let { minute ->
+                                        if (minute in 0..59) selectedMinute = minute
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f),
+                            enabled = !isEditMode,
                             label = { Text("Minute (00-59)", fontSize = 12.sp) },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = onBackgroundColor,
                                 unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                cursorColor = onBackgroundColor
+                                cursorColor = onBackgroundColor,
+                                disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
+                                disabledTextColor = onBackgroundColor
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number,

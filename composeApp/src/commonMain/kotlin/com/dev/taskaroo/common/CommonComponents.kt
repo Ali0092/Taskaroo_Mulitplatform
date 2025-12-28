@@ -220,10 +220,11 @@ fun TaskChipRow(
 fun TaskCardConcise(
     modifier: Modifier,
     taskData: TaskData,
-    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> }
+    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -277,12 +278,14 @@ fun TaskCardConcise(
 @Composable
 fun TaskCard(
     taskData: TaskData,
-    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> }
+    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 16.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {

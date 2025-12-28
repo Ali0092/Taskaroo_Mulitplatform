@@ -144,6 +144,42 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
         }
 
     /**
+     * Update an existing task and its task items
+     * Note: timestamp cannot be changed (it's the primary key)
+     */
+    suspend fun updateTask(taskData: TaskData) = withContext(Dispatchers.Default) {
+        database.transaction {
+            // Update main task fields
+            taskQueries.updateTask(
+                title = taskData.title,
+                subtitle = taskData.subtitle,
+                category = taskData.category,
+                timestampMillis = taskData.timestampMillis
+            )
+
+            // Delete all existing task items for this task
+            taskQueries.deleteTaskItemsForTask(taskData.timestampMillis)
+
+            // Re-insert all task items with their current state
+            taskData.taskList.forEach { taskItem ->
+                taskQueries.insertTaskItem(
+                    id = taskItem.id,
+                    taskTimestamp = taskData.timestampMillis,
+                    text = taskItem.text,
+                    isCompleted = if (taskItem.isCompleted) 1L else 0L
+                )
+            }
+
+            // Update completed count based on current task items
+            val completedCount = taskData.taskList.count { it.isCompleted }
+            taskQueries.updateCompletedCount(
+                completedTasksCount = completedCount.toLong(),
+                timestampMillis = taskData.timestampMillis
+            )
+        }
+    }
+
+    /**
      * Get all tasks as a Flow for reactive updates
      */
     fun getAllTasksFlow(): Flow<List<TaskData>> {

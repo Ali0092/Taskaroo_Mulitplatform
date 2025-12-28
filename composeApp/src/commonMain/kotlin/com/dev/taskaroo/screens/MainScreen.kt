@@ -30,6 +30,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.common.CapsuleFloatingActionButton
+import com.dev.taskaroo.screens.CreateTaskScreen
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow
 import com.dev.taskaroo.common.TopAppBar
@@ -205,6 +206,9 @@ class MainScreen : Screen {
                                             println("MainScreen: Error toggling task item - ${e.message}")
                                         }
                                     }
+                                },
+                                onClick = {
+                                    navigator.push(CreateTaskScreen(taskTimestampToEdit = task.timestampMillis))
                                 }
                             )
                         }

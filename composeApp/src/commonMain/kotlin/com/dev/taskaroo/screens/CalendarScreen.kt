@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,8 +41,10 @@ import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.screens.CreateTaskScreen
 import com.dev.taskaroo.utils.DateTimeUtils
 import com.dev.taskaroo.utils.todayDate
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
@@ -81,6 +84,7 @@ class CalendarScreen : Screen {
 
         val navigator = LocalNavigator.currentOrThrow
         val databaseHelper = LocalDatabase.current
+        val coroutineScope = rememberCoroutineScope()
 
         // Selected date state
         var selectedDate by remember {
@@ -152,7 +156,24 @@ class CalendarScreen : Screen {
                         val tasksForThisHour = tasksByHour[index] ?: emptyList()
                         HourColumnItem(
                             hour = hourString,
-                            items = tasksForThisHour
+                            items = tasksForThisHour,
+                            onTaskItemToggle = { taskItemId, isChecked ->
+                                coroutineScope.launch {
+                                    try {
+                                        databaseHelper.toggleTaskItemCompletion(taskItemId, isChecked)
+
+                                        // Refresh tasks for selected date
+                                        val startMillis = DateTimeUtils.getStartOfDayMillis(selectedDate)
+                                        val endMillis = DateTimeUtils.getEndOfDayMillis(selectedDate)
+                                        tasksForSelectedDate = databaseHelper.getTasksForDate(startMillis, endMillis)
+                                    } catch (e: Exception) {
+                                        println("CalendarScreen: Error toggling task item - ${e.message}")
+                                    }
+                                }
+                            },
+                            onTaskClick = { taskData ->
+                                navigator.push(CreateTaskScreen(taskTimestampToEdit = taskData.timestampMillis))
+                            }
                         )
                     }
                 }
@@ -167,7 +188,9 @@ class CalendarScreen : Screen {
 fun HourColumnItem(
     hour: String,
     items: List<TaskData>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onTaskClick: (TaskData) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -198,7 +221,9 @@ fun HourColumnItem(
                 items.forEach { taskData ->
                     TaskCardConcise(
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                        taskData = taskData
+                        taskData = taskData,
+                        onTaskItemToggle = onTaskItemToggle,
+                        onClick = { onTaskClick(taskData) }
                     )
                 }
             }
