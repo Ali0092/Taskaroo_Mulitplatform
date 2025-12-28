@@ -48,10 +48,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.WhitePoint
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.taskaroo.highPriorityBackground
@@ -63,6 +65,7 @@ import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.onBackgroundColor
+import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.urgentPriorityBackground
@@ -87,8 +90,6 @@ fun TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        // CanShowNavigationIcon
         if (canShowNavigationIcon) {
             IconButton(
                 onClick = {
@@ -107,7 +108,7 @@ fun TopAppBar(
         Text(
             modifier = Modifier.weight(1f),
             text = title,
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Normal,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -591,21 +592,22 @@ fun CapsuleFloatingActionButton(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.BottomEnd
     ) {
-        Box(
+        Row (
             modifier = Modifier
-                .size(56.dp)
                 .clip(CircleShape)
-                .border(BorderStroke(width = 1.dp, color = primaryColorVariant), shape = CircleShape)
+                .border(BorderStroke(width = 1.dp, color = primaryColorVariant.copy(alpha = 0.5f)), shape = CircleShape)
                 .clickable {
                     onAddClick()
                 }
-                .background(onBackgroundColor.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
+                .background(primary)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
+            Text(text = "Calendar", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Spacer(modifier = Modifier.width(6.dp))
             Image(
                 painter = painterResource(Res.drawable.calendar),
                 contentDescription = "add_task",
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }

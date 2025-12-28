@@ -1,6 +1,7 @@
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,15 +11,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,20 +30,19 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.common.CapsuleFloatingActionButton
 import com.dev.taskaroo.common.DeleteConfirmationDialog
-import com.dev.taskaroo.screens.CreateTaskScreen
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
-import com.dev.taskaroo.modal.TaskItem
+import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.utils.currentTimeMillis
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
-import taskaroo.composeapp.generated.resources.menu_icon
+import taskaroo.composeapp.generated.resources.no_data_placeholder
 
 class MainScreen : Screen {
 
@@ -49,22 +50,15 @@ class MainScreen : Screen {
     override fun Content() {
         // Sample task data with all priority levels
 
-        val titles = listOf(
-            "Make Every Day Count Forward ✨",
-            "Small Tasks, Big Wins Daily 🚀",
-            "Plan Less, Achieve More Today 📅",
-            "Your Daily Progress Starts Here 🌱",
-            "Turn Goals Into Daily Action 🔥",
-            "Focus Today, Grow Tomorrow Strong 💪",
-            "Build Momentum One Task Daily ⚡",
-            "Clear Mind, Complete More Today 🧠"
-        )
-
-        // State for selected category
-        var selectedCategory by remember { mutableStateOf("Work") }
         val navigator = LocalNavigator.currentOrThrow
         val databaseHelper = LocalDatabase.current
         val coroutineScope = rememberCoroutineScope()
+
+        // Filter state - persists during navigation session
+        var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }
+
+        // Track all tasks for chip visibility
+        var allTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
         var tasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
 
@@ -72,26 +66,38 @@ class MainScreen : Screen {
         var showDeleteDialog by remember { mutableStateOf(false) }
         var taskToDelete by remember { mutableStateOf<TaskData?>(null) }
 
-        // Load tasks when screen appears
+        // Load all tasks initially and when screen appears
         LaunchedEffect(Unit) {
             try {
-                val allTasks = databaseHelper.getAllTasks()
-                val currentTime = currentTimeMillis()
-
-                // Filter: only upcoming tasks (timestampMillis >= current time)
-                // Sort: by deadline ascending (closest first)
-                tasks = allTasks
-                    .filter { it.timestampMillis >= currentTime }
-                    .sortedBy { it.timestampMillis }
-
-                println("MainScreen: Loaded ${tasks.size} upcoming tasks from ${allTasks.size} total")
+                isLoading = true
+                allTasks = databaseHelper.getAllTasks()
             } catch (e: Exception) {
-                println("MainScreen: Error loading tasks - ${e.message}")
                 e.printStackTrace()
-                tasks = emptyList()
+                allTasks = emptyList()
             } finally {
                 isLoading = false
             }
+        }
+
+        // Filter and sort tasks based on selected filter
+        LaunchedEffect(selectedFilter, allTasks) {
+            val currentTime = currentTimeMillis()
+
+            tasks = when (selectedFilter) {
+                "Upcoming" -> {
+                    allTasks
+                        .filter { it.timestampMillis >= currentTime }
+                        .sortedBy { it.timestampMillis }  // Closest deadline first
+                }
+
+                "All" -> {
+                    allTasks.sortedBy { it.timestampMillis }  // Oldest first
+                }
+
+                else -> allTasks.sortedBy { it.timestampMillis }
+            }
+
+            println("MainScreen: Filtered to ${tasks.size} tasks for filter '$selectedFilter'")
         }
 
         Scaffold(
@@ -113,9 +119,9 @@ class MainScreen : Screen {
             ) {
 
                 TopAppBar(
-                    title = titles.random(),
+                    title = "Make every day count forward✨",
                     canShowNavigationIcon = false,
-                    otherIcon = Res.drawable.menu_icon,
+                    otherIcon = null,
                     onOtherIconClick = {
                         // later this will be added...
                     }
@@ -123,55 +129,58 @@ class MainScreen : Screen {
 
                 Spacer(Modifier.height(16.dp))
 
-//                TaskChipRow(
-//                    onCategorySelected = { category ->
-//                        selectedCategory = category
-//                    }
-//                )
-
-                // Filter tasks based on selected category
-//                val filteredTasks = when (selectedCategory) {
-//                    "Work" -> sampleTasks.filter { it.category in listOf("High", "Medium") }
-//                    "Personal" -> sampleTasks.filter { it.category == "Low" }
-//                    "Shopping" -> sampleTasks.filter { it.category == "Medium" }
-//                    "Health" -> sampleTasks.filter { it.category in listOf("Urgent", "High") }
-//                    else -> sampleTasks
-//                }
-
-                // LazyColumn with task cards
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (isLoading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Loading tasks...",
-                                    color = onBackgroundColor.copy(alpha = 0.5f)
-                                )
-                            }
+                // Show filter chips only when there are tasks
+                if (allTasks.isNotEmpty()) {
+                    TaskChipRow(
+                        categories = listOf("Upcoming", "All"),
+                        onCategorySelected = { filter ->
+                            selectedFilter = filter
                         }
-                    } else if (tasks.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No upcoming tasks!\nTap the + button to create one.",
-                                    color = onBackgroundColor.copy(alpha = 0.5f),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
+                    )
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Loading tasks...",
+                            color = onBackgroundColor.copy(alpha = 0.5f)
+                        )
+                    }
+                } else if (tasks.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.no_data_placeholder),
+                                contentDescription = null,
+                                tint = onBackgroundColor.copy(alpha = 0.5f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No tasks!\nTap the button at\nbottom right to create one.",
+                                color = onBackgroundColor.copy(alpha = 0.5f),
+                                textAlign = TextAlign.Center
+                            )
                         }
-                    } else {
+                    }
+                } else {
+                    // LazyColumn with task cards
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
                         items(tasks, key = { it.timestampMillis }) { task ->
                             TaskCard(
                                 taskData = task,
@@ -181,8 +190,8 @@ class MainScreen : Screen {
                                         try {
                                             databaseHelper.toggleTaskItemCompletion(taskItemId, isChecked)
 
-                                            // Update local state
-                                            tasks = tasks.map { currentTask ->
+                                            // Update both allTasks and tasks lists
+                                            allTasks = allTasks.map { currentTask ->
                                                 if (currentTask.timestampMillis == task.timestampMillis) {
                                                     val updatedTaskList = currentTask.taskList.map { item ->
                                                         if (item.id == taskItemId) {
@@ -198,6 +207,26 @@ class MainScreen : Screen {
                                                         currentTask.timestampMillis,
                                                         completedCount
                                                     )
+
+                                                    currentTask.copy(
+                                                        taskList = updatedTaskList,
+                                                        completedTasks = completedCount
+                                                    )
+                                                } else {
+                                                    currentTask
+                                                }
+                                            }
+
+                                            tasks = tasks.map { currentTask ->
+                                                if (currentTask.timestampMillis == task.timestampMillis) {
+                                                    val updatedTaskList = currentTask.taskList.map { item ->
+                                                        if (item.id == taskItemId) {
+                                                            item.copy(isCompleted = isChecked)
+                                                        } else {
+                                                            item
+                                                        }
+                                                    }
+                                                    val completedCount = updatedTaskList.count { it.isCompleted }
 
                                                     currentTask.copy(
                                                         taskList = updatedTaskList,
@@ -223,6 +252,8 @@ class MainScreen : Screen {
                         }
                     }
                 }
+
+
             }
 
             // Delete confirmation dialog
@@ -240,7 +271,8 @@ class MainScreen : Screen {
                                 taskToDelete?.let { task ->
                                     databaseHelper.deleteTask(task.timestampMillis)
 
-                                    // Remove from local state immediately
+                                    // Update both allTasks and tasks lists
+                                    allTasks = allTasks.filter { it.timestampMillis != task.timestampMillis }
                                     tasks = tasks.filter { it.timestampMillis != task.timestampMillis }
 
                                     showDeleteDialog = false
