@@ -44,6 +44,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
+import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
@@ -64,6 +65,7 @@ import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 import taskaroo.composeapp.generated.resources.close_icon
+import taskaroo.composeapp.generated.resources.delete_icon
 import taskaroo.composeapp.generated.resources.tick_icon
 import kotlin.time.ExperimentalTime
 
@@ -116,6 +118,9 @@ class CreateTaskScreen(
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var isSaving by remember { mutableStateOf(false) }
 
+        // Delete dialog state
+        var showDeleteDialog by remember { mutableStateOf(false) }
+
         // Pre-fill form when task is loaded in edit mode
         LaunchedEffect(existingTask) {
             existingTask?.let { task ->
@@ -154,8 +159,14 @@ class CreateTaskScreen(
                     title = if (isEditMode) "Edit your Task" else "Make your Task",
                     canShowNavigationIcon = true,
                     otherIcon = Res.drawable.tick_icon,
+                    secondIcon = if (isEditMode) Res.drawable.delete_icon else null,
                     onBackButtonClick = {
                         navigator.pop()
+                    },
+                    onSecondIconClick = {
+                        if (isEditMode) {
+                            showDeleteDialog = true
+                        }
                     },
                     onOtherIconClick = {
                         if (taskTitle.isNotBlank() && selectedDate.isNotBlank()) {
@@ -641,6 +652,32 @@ class CreateTaskScreen(
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            // Delete confirmation dialog (only in edit mode)
+            if (isEditMode && existingTask != null) {
+                DeleteConfirmationDialog(
+                    showDialog = showDeleteDialog,
+                    taskTitle = existingTask?.title ?: "",
+                    onDismiss = {
+                        showDeleteDialog = false
+                    },
+                    onConfirm = {
+                        coroutineScope.launch {
+                            try {
+                                taskTimestampToEdit?.let { timestamp ->
+                                    databaseHelper.deleteTask(timestamp)
+                                    showDeleteDialog = false
+                                    navigator.pop()  // Return to previous screen
+                                }
+                            } catch (e: Exception) {
+                                println("DeleteTask: Error - ${e.message}")
+                                errorMessage = "Failed to delete task: ${e.message}"
+                                showDeleteDialog = false
+                            }
+                        }
+                    }
+                )
             }
         }
     }

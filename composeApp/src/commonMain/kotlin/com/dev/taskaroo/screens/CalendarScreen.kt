@@ -35,6 +35,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
+import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskCardConcise
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
@@ -93,6 +94,10 @@ class CalendarScreen : Screen {
 
         // Tasks for selected date
         var tasksForSelectedDate by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+
+        // Delete dialog state
+        var showDeleteDialog by remember { mutableStateOf(false) }
+        var taskToDelete by remember { mutableStateOf<TaskData?>(null) }
 
         // Load tasks when date changes
         LaunchedEffect(selectedDate) {
@@ -173,11 +178,48 @@ class CalendarScreen : Screen {
                             },
                             onTaskClick = { taskData ->
                                 navigator.push(CreateTaskScreen(taskTimestampToEdit = taskData.timestampMillis))
+                            },
+                            onTaskLongClick = { taskData ->
+                                taskToDelete = taskData
+                                showDeleteDialog = true
                             }
                         )
                     }
                 }
 
+            }
+
+            // Delete confirmation dialog
+            if (showDeleteDialog && taskToDelete != null) {
+                DeleteConfirmationDialog(
+                    showDialog = showDeleteDialog,
+                    taskTitle = taskToDelete?.title ?: "",
+                    onDismiss = {
+                        showDeleteDialog = false
+                        taskToDelete = null
+                    },
+                    onConfirm = {
+                        coroutineScope.launch {
+                            try {
+                                taskToDelete?.let { task ->
+                                    databaseHelper.deleteTask(task.timestampMillis)
+
+                                    // Refresh tasks for selected date
+                                    val startMillis = DateTimeUtils.getStartOfDayMillis(selectedDate)
+                                    val endMillis = DateTimeUtils.getEndOfDayMillis(selectedDate)
+                                    tasksForSelectedDate = databaseHelper.getTasksForDate(startMillis, endMillis)
+
+                                    showDeleteDialog = false
+                                    taskToDelete = null
+                                }
+                            } catch (e: Exception) {
+                                println("CalendarScreen: Error deleting task - ${e.message}")
+                                showDeleteDialog = false
+                                taskToDelete = null
+                            }
+                        }
+                    }
+                )
             }
         }
     }
@@ -190,7 +232,8 @@ fun HourColumnItem(
     items: List<TaskData>,
     modifier: Modifier = Modifier,
     onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
-    onTaskClick: (TaskData) -> Unit = {}
+    onTaskClick: (TaskData) -> Unit = {},
+    onTaskLongClick: (TaskData) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -223,7 +266,8 @@ fun HourColumnItem(
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                         taskData = taskData,
                         onTaskItemToggle = onTaskItemToggle,
-                        onClick = { onTaskClick(taskData) }
+                        onClick = { onTaskClick(taskData) },
+                        onLongClick = { onTaskLongClick(taskData) }
                     )
                 }
             }

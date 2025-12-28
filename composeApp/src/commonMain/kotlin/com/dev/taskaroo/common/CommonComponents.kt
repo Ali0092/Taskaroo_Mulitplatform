@@ -12,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +37,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,8 +78,10 @@ fun TopAppBar(
     title: String,
     canShowNavigationIcon: Boolean,
     otherIcon: DrawableResource? = null,
+    secondIcon: DrawableResource? = null,
     onBackButtonClick: () -> Unit = {},
-    onOtherIconClick: () -> Unit = {}
+    onOtherIconClick: () -> Unit = {},
+    onSecondIconClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -107,6 +112,18 @@ fun TopAppBar(
             color = MaterialTheme.colorScheme.onBackground
         )
 
+        // Second icon (delete button)
+        if (secondIcon != null) {
+            Spacer(modifier = Modifier.width(12.dp))
+
+            IconSurface(
+                icon = secondIcon,
+                getAddButtonClick = {
+                    onSecondIconClick()
+                }
+            )
+        }
+
         // Other icon
         if (otherIcon != null) {
             Spacer(modifier = Modifier.width(12.dp))
@@ -120,6 +137,53 @@ fun TopAppBar(
         }
     }
 
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    showDialog: Boolean,
+    taskTitle: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Delete Task",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete \"$taskTitle\" permanently?",
+                    fontSize = 16.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirm
+                ) {
+                    Text(
+                        text = "Delete",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 }
 
 @Composable
@@ -221,10 +285,14 @@ fun TaskCardConcise(
     modifier: Modifier,
     taskData: TaskData,
     onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier.combinedClickable(
+            onClick = { onClick() },
+            onLongClick = { onLongClick() }
+        ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -279,13 +347,17 @@ fun TaskCardConcise(
 fun TaskCard(
     taskData: TaskData,
     onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
-            .clickable { onClick() },
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { onLongClick() }
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {

@@ -30,6 +30,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.common.CapsuleFloatingActionButton
+import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.screens.CreateTaskScreen
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow
@@ -66,6 +67,10 @@ class MainScreen : Screen {
         val coroutineScope = rememberCoroutineScope()
         var tasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
+
+        // Delete dialog state
+        var showDeleteDialog by remember { mutableStateOf(false) }
+        var taskToDelete by remember { mutableStateOf<TaskData?>(null) }
 
         // Load tasks when screen appears
         LaunchedEffect(Unit) {
@@ -209,11 +214,46 @@ class MainScreen : Screen {
                                 },
                                 onClick = {
                                     navigator.push(CreateTaskScreen(taskTimestampToEdit = task.timestampMillis))
+                                },
+                                onLongClick = {
+                                    taskToDelete = task
+                                    showDeleteDialog = true
                                 }
                             )
                         }
                     }
                 }
+            }
+
+            // Delete confirmation dialog
+            if (showDeleteDialog && taskToDelete != null) {
+                DeleteConfirmationDialog(
+                    showDialog = showDeleteDialog,
+                    taskTitle = taskToDelete?.title ?: "",
+                    onDismiss = {
+                        showDeleteDialog = false
+                        taskToDelete = null
+                    },
+                    onConfirm = {
+                        coroutineScope.launch {
+                            try {
+                                taskToDelete?.let { task ->
+                                    databaseHelper.deleteTask(task.timestampMillis)
+
+                                    // Remove from local state immediately
+                                    tasks = tasks.filter { it.timestampMillis != task.timestampMillis }
+
+                                    showDeleteDialog = false
+                                    taskToDelete = null
+                                }
+                            } catch (e: Exception) {
+                                println("MainScreen: Error deleting task - ${e.message}")
+                                showDeleteDialog = false
+                                taskToDelete = null
+                            }
+                        }
+                    }
+                )
             }
         }
     }
