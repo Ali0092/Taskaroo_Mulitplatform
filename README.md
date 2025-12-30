@@ -13,8 +13,6 @@ A modern, cross-platform task management application built with Kotlin Multiplat
 - **Calendar View**: View and manage tasks through an intuitive calendar interface
 - **Cross-Platform**: Native apps for both Android and iOS built from a shared codebase
 - **Local Database**: SQLDelight-powered local persistence for fast, offline-first task management
-- **User Preferences**: Customizable settings and preferences
-- **Onboarding Flow**: Smooth introduction experience for new users
 - **Modern UI**: Clean Material Design 3 interface with custom theming
 
 ## Screenshots
@@ -30,7 +28,6 @@ Taskaroo leverages modern mobile development technologies:
 - **[SQLDelight](https://cashapp.github.io/sqldelight/)**: Type-safe SQL database with Kotlin extensions
 - **[Voyager](https://voyager.adriel.cafe/)**: Multiplatform navigation library
 - **[kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)**: Multiplatform date and time library
-- **Material Design 3**: Modern, adaptive design system
 
 ## Architecture
 
@@ -64,13 +61,6 @@ Taskaroo/
 - **State Management**: Compose state hoisting pattern for reactive UI updates
 
 ## Getting Started
-
-### Prerequisites
-
-- **JDK 17 or higher**
-- **Android Studio** (for Android development)
-- **Xcode** (for iOS development, macOS only)
-- **CocoaPods** (for iOS dependencies, macOS only)
 
 ### Setup
 
@@ -135,17 +125,9 @@ Copyright (c) 2025 Muhammad Ali
 
 ## Author
 
-**Muhammad Ali**
+**Made with ❤️ by Muhammad Ali using Kotlin Multiplatform**
 - Portfolio: [https://muhammadali0092.netlify.app/](https://muhammadali0092.netlify.app/)
 - Date: 2025-12-30
 
-## Acknowledgments
-
-- [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) by JetBrains
-- [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) by JetBrains
-- [SQLDelight](https://cashapp.github.io/sqldelight/) by Cash App
-- [Voyager](https://voyager.adriel.cafe/) - Multiplatform Navigation Library
-
 ---
 
-Made with ❤️ using Kotlin Multiplatform
