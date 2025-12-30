@@ -1,0 +1,4 @@
+// iOS Configuration Template
+// Copy this file to Config.xcconfig and replace YOUR_TEAM_ID_HERE with your Apple Developer Team ID
+
+TEAM_ID=YOUR_TEAM_ID_HERE

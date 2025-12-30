@@ -1,3 +1,15 @@
+/**
+ * Onboarding introduction screen for new users.
+ *
+ * This screen provides the initial onboarding experience for new users,
+ * featuring a horizontal pager with motivational quotes and imagery to
+ * introduce the app's purpose and value proposition. Users can swipe through
+ * multiple pages before proceeding to preferences setup.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.Image
@@ -43,6 +55,20 @@ import taskaroo.composeapp.generated.resources.onboarding_2
 import taskaroo.composeapp.generated.resources.onboarding_3
 
 
+/**
+ * Introduction and onboarding screen with horizontal pager.
+ *
+ * This screen presents:
+ * - Three-page horizontal pager with motivational quotes
+ * - Visual imagery representing task management concepts
+ * - Dot indicator for page navigation
+ * - "Get Started" button to proceed to preferences setup
+ *
+ * Each page features:
+ * - An illustrative image
+ * - A motivational quote about productivity
+ * - Attribution to the quote's author
+ */
 class IntroScreen : Screen {
 
 
@@ -119,6 +145,16 @@ class IntroScreen : Screen {
 
 }
 
+/**
+ * Individual page view within the introduction pager.
+ *
+ * Displays a single onboarding page with an image, motivational quote,
+ * and author attribution in a vertically arranged layout.
+ *
+ * @param image The drawable resource for the page illustration
+ * @param quote The motivational quote text to display
+ * @param author The attribution text for the quote author
+ */
 @Composable
 fun PagerView(image: DrawableResource, quote: String, author: String) {
     Column(modifier = Modifier.fillMaxWidth()) {

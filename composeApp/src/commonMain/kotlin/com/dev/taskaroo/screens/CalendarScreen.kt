@@ -1,3 +1,15 @@
+/**
+ * Calendar-based task selection and viewing screen.
+ *
+ * This screen provides a calendar interface for selecting dates and viewing tasks
+ * scheduled for specific dates. Tasks are organized by hourly time slots throughout
+ * the day, making it easy to visualize the daily schedule. Users can interact with
+ * tasks directly from the calendar view.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import HorizontalCalendar
@@ -77,6 +89,20 @@ val hoursList = listOf(
     "11:00\nPM",  // hour 23
 )
 
+/**
+ * Calendar screen displaying tasks organized by date and hourly time slots.
+ *
+ * This screen provides:
+ * - Interactive horizontal calendar for date selection
+ * - Hourly time slot visualization (24-hour format)
+ * - Tasks grouped and displayed within their respective time slots
+ * - Task item completion toggling
+ * - Navigation to task editing on tap
+ * - Task deletion via long-press with confirmation dialog
+ * - Automatic refresh of tasks when date changes
+ *
+ * Tasks are automatically sorted in ascending order within each hour slot.
+ */
 class CalendarScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -226,6 +252,20 @@ class CalendarScreen : Screen {
 
 }
 
+/**
+ * Displays a single hour time slot with its associated tasks.
+ *
+ * This composable renders a horizontal layout with the hour label on the left
+ * and a list of tasks scheduled for that hour on the right. A divider line
+ * separates the content visually.
+ *
+ * @param hour The formatted hour string (e.g., "09:00\nAM")
+ * @param items List of tasks scheduled for this hour slot
+ * @param modifier Modifier for the column layout
+ * @param onTaskItemToggle Callback when a task item's completion status is toggled
+ * @param onTaskClick Callback when a task is clicked
+ * @param onTaskLongClick Callback when a task is long-pressed
+ */
 @Composable
 fun HourColumnItem(
     hour: String,

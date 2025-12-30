@@ -1,3 +1,15 @@
+/**
+ * Main task list screen with filtering and task management.
+ *
+ * This screen serves as the primary interface for viewing and managing tasks.
+ * It provides filtering capabilities (Upcoming/All), task completion tracking,
+ * and navigation to create new tasks or edit existing ones. Tasks can be deleted
+ * via long-press interaction.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.background
@@ -44,6 +56,20 @@ import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.no_data_placeholder
 
+/**
+ * Main screen displaying task list with filtering and management capabilities.
+ *
+ * This screen provides a comprehensive task management interface that allows users to:
+ * - View tasks filtered by "Upcoming" (future tasks) or "All" (all tasks)
+ * - Toggle task item completion status with real-time database updates
+ * - Navigate to task creation via floating action button
+ * - Edit tasks by tapping on them
+ * - Delete tasks via long-press with confirmation dialog
+ * - See completion progress for each task
+ *
+ * The screen maintains filter state across navigation and automatically refreshes
+ * task data when returning from other screens.
+ */
 class MainScreen : Screen {
 
     @Composable

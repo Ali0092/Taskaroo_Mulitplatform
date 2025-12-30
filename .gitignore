@@ -17,3 +17,17 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# iOS Team-specific configuration
+iosApp/Configuration/Config.xcconfig
+
+# iOS Binary Frameworks (build artifacts)
+iosApp/Frameworks/
+
+# CocoaPods auto-generated files
+iosApp/*.podspec
+iosApp/Podfile.lock
+iosApp/iosApp.xcworkspace/
+
+# Keep Podfile for dependency management
+!iosApp/Podfile

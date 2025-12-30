@@ -1,16 +1,39 @@
+/*
+ * Taskaroo Compose App Module Build Configuration
+ *
+ * This is the main application module build file that configures:
+ * - Kotlin Multiplatform for Android and iOS targets
+ * - Compose Multiplatform for shared UI
+ * - SQLDelight for database management
+ * - Platform-specific dependencies and configurations
+ *
+ * Target Platforms:
+ * - Android: minSdk 24, targetSdk 36
+ * - iOS: x64, ARM64, Simulator ARM64
+ *
+ * Author: Muhammad Ali
+ * Date: 2025-12-30
+ * Portfolio: https://muhammadali0092.netlify.app/
+ */
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import kotlin.collections.set
 
+// Apply required plugins for Kotlin Multiplatform, Android, Compose, and SQLDelight
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinMultiplatform)      // Kotlin Multiplatform support
+    alias(libs.plugins.androidApplication)       // Android application
+    alias(libs.plugins.composeMultiplatform)     // Compose Multiplatform UI
+    alias(libs.plugins.composeCompiler)          // Compose compiler
+    alias(libs.plugins.sqldelight)               // SQLDelight database
 }
 
+/**
+ * Kotlin Multiplatform Configuration
+ * Defines target platforms and their specific settings
+ */
 kotlin {
     androidTarget()
 

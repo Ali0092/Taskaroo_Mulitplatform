@@ -1,3 +1,10 @@
+/**
+ * Reusable UI components library for Taskaroo application
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.common
 
 import androidx.compose.animation.AnimatedVisibility
@@ -48,12 +55,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.colorspace.WhitePoint
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.taskaroo.highPriorityBackground
@@ -76,6 +81,17 @@ import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.back_button
 import taskaroo.composeapp.generated.resources.calendar
 
+/**
+ * Custom top app bar component with navigation and action icons
+ *
+ * @param title The text to display as the app bar title
+ * @param canShowNavigationIcon Whether to show the back navigation button
+ * @param otherIcon Optional drawable resource for the primary action icon
+ * @param secondIcon Optional drawable resource for the secondary action icon
+ * @param onBackButtonClick Callback invoked when back button is clicked
+ * @param onOtherIconClick Callback invoked when primary action icon is clicked
+ * @param onSecondIconClick Callback invoked when secondary action icon is clicked
+ */
 @Composable
 fun TopAppBar(
     title: String,
@@ -140,6 +156,14 @@ fun TopAppBar(
 
 }
 
+/**
+ * Alert dialog for confirming task deletion
+ *
+ * @param showDialog Whether the dialog should be displayed
+ * @param taskTitle The title of the task to be deleted
+ * @param onDismiss Callback invoked when dialog is dismissed or cancelled
+ * @param onConfirm Callback invoked when user confirms deletion
+ */
 @Composable
 fun DeleteConfirmationDialog(
     showDialog: Boolean,
@@ -187,6 +211,12 @@ fun DeleteConfirmationDialog(
     }
 }
 
+/**
+ * Circular icon button with transparent background and border
+ *
+ * @param icon The drawable resource for the icon
+ * @param getAddButtonClick Callback invoked when the icon is clicked
+ */
 @Composable
 fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
     Surface(
@@ -211,6 +241,12 @@ fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
     }
 }
 
+/**
+ * Page indicator dots for carousel or pager components
+ *
+ * @param pageCount Total number of pages
+ * @param currentPage Current active page index
+ */
 @Composable
 fun DotIndicator(
     pageCount: Int, currentPage: Int,
@@ -234,6 +270,12 @@ fun DotIndicator(
     }
 }
 
+/**
+ * Horizontal row of selectable category chips with pill-shaped design
+ *
+ * @param categories List of category names to display
+ * @param onCategorySelected Callback invoked when a category is selected
+ */
 @Composable
 fun TaskChipRow(
     categories: List<String> = listOf("Work", "Personal", "Shopping", "Health"),
@@ -281,6 +323,15 @@ fun TaskChipRow(
 }
 
 
+/**
+ * Compact task card displaying task title, items, and deadline
+ *
+ * @param modifier Modifier to apply to the card
+ * @param taskData The task data to display
+ * @param onTaskItemToggle Callback invoked when a task item checkbox is toggled
+ * @param onClick Callback invoked when the card is clicked
+ * @param onLongClick Callback invoked when the card is long-pressed
+ */
 @Composable
 fun TaskCardConcise(
     modifier: Modifier,
@@ -344,6 +395,14 @@ fun TaskCardConcise(
 }
 
 
+/**
+ * Full-featured task card with title, subtitle, priority, deadline, and progress tracking
+ *
+ * @param taskData The task data to display
+ * @param onTaskItemToggle Callback invoked when a task item checkbox is toggled
+ * @param onClick Callback invoked when the card is clicked
+ * @param onLongClick Callback invoked when the card is long-pressed
+ */
 @Composable
 fun TaskCard(
     taskData: TaskData,
@@ -525,6 +584,13 @@ fun TaskCard(
     }
 }
 
+/**
+ * Custom circular checkbox with animated check mark
+ *
+ * @param checked Whether the checkbox is currently checked
+ * @param onCheckedChange Callback invoked when checkbox state changes
+ * @param modifier Modifier to apply to the checkbox
+ */
 @Composable
 fun CircularCheckbox(
     checked: Boolean,
@@ -583,6 +649,12 @@ fun CircularCheckbox(
     }
 }
 
+/**
+ * Pill-shaped floating action button with calendar icon and text
+ *
+ * @param onAddClick Callback invoked when the button is clicked
+ * @param modifier Modifier to apply to the button container
+ */
 @Composable
 fun CapsuleFloatingActionButton(
     onAddClick: () -> Unit,
@@ -613,6 +685,13 @@ fun CapsuleFloatingActionButton(
     }
 }
 
+/**
+ * Individual task item row with checkbox and text
+ *
+ * @param taskItem The task item data to display
+ * @param isConciseItem Whether to use smaller sizing for compact layout
+ * @param onToggle Callback invoked when the checkbox is toggled
+ */
 @Composable
 fun TaskItemRow(
     taskItem: TaskItem,
