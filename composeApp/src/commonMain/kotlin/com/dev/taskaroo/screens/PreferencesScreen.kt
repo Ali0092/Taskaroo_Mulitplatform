@@ -1,3 +1,15 @@
+/**
+ * User preferences and settings management screen.
+ *
+ * This screen allows users to select their usage context for the Taskaroo app
+ * during the onboarding process. Users can choose one or more categories that
+ * describe how they plan to use the application (Personal, Work, Education).
+ * The selections help personalize the user experience.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -57,6 +69,20 @@ import taskaroo.composeapp.generated.resources.education
 import taskaroo.composeapp.generated.resources.user
 import taskaroo.composeapp.generated.resources.working
 
+/**
+ * Preferences selection screen for onboarding flow.
+ *
+ * This screen presents usage category options:
+ * - Personal: For individual task management
+ * - Work: For professional and work-related tasks
+ * - Education: For academic and learning-related tasks
+ *
+ * Features:
+ * - Multiple selection capability with visual feedback
+ * - Icon-based category representation
+ * - Check/uncheck toggle interaction
+ * - Proceed button to advance to basic info screen
+ */
 class PreferencesScreen: Screen {
 
     @Composable
@@ -120,6 +146,17 @@ class PreferencesScreen: Screen {
 
 }
 
+/**
+ * Individual preference selection item with toggle functionality.
+ *
+ * Displays a selectable card with an icon, title, and check indicator.
+ * The card's appearance changes based on selection state, providing
+ * visual feedback to the user.
+ *
+ * @param icon The drawable resource for the preference category icon
+ * @param title The text label for the preference category
+ * @param onSelected Callback invoked when the item is selected/deselected, receives the title
+ */
 @Composable
 fun PreferenceSingleItem(icon: DrawableResource, title: String, onSelected: (String) -> Unit ) {
 

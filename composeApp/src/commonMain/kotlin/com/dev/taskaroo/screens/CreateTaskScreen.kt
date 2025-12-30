@@ -1,3 +1,16 @@
+/**
+ * Task creation and editing screen with priority selection.
+ *
+ * This screen serves as a comprehensive task creation and editing interface.
+ * It supports both creating new tasks and editing existing ones, with features
+ * including priority selection, deadline setting, time selection, and dynamic
+ * task item checklist management. The screen intelligently preserves task item
+ * completion status when editing existing tasks.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.background
@@ -69,6 +82,27 @@ import taskaroo.composeapp.generated.resources.delete_icon
 import taskaroo.composeapp.generated.resources.tick_icon
 import kotlin.time.ExperimentalTime
 
+/**
+ * Screen for creating new tasks or editing existing ones.
+ *
+ * This screen provides a comprehensive form for task management with:
+ * - Priority selection (Urgent, High, Medium, Low)
+ * - Deadline date picker with validation
+ * - Time selection (hour and minute)
+ * - Task title and description fields
+ * - Dynamic checklist of task items with add/remove functionality
+ * - Delete option (in edit mode only)
+ * - Form validation and error handling
+ * - Automatic date/time parsing and timestamp generation
+ *
+ * In edit mode, the screen:
+ * - Pre-fills all form fields with existing task data
+ * - Preserves task item completion status during edits
+ * - Disables date/time editing to maintain task identity
+ * - Shows delete button for task removal
+ *
+ * @property taskTimestampToEdit Optional timestamp of task to edit; null for creating new tasks
+ */
 class CreateTaskScreen(
     private val taskTimestampToEdit: Long? = null
 ) : Screen {

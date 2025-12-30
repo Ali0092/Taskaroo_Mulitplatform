@@ -1,3 +1,15 @@
+/**
+ * Basic user information collection screen.
+ *
+ * This screen collects basic user information during the onboarding process,
+ * including the user's first name and an optional nickname. It features a
+ * profile image placeholder and form fields for entering personal details.
+ * This is typically the final step in the onboarding flow.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -46,6 +58,19 @@ import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.onboarding_3
 
+/**
+ * User information collection screen for onboarding.
+ *
+ * This screen provides:
+ * - Circular profile image placeholder
+ * - First name input field (required)
+ * - Nickname input field (optional)
+ * - Form validation via text field state
+ * - Proceed button to complete onboarding
+ *
+ * The collected information can be used to personalize the user's
+ * experience throughout the application.
+ */
 class BasicInfoScreen : Screen {
     @Composable
     override fun Content() {

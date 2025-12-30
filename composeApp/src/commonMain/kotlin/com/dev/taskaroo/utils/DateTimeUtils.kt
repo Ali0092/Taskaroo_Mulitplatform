@@ -1,8 +1,25 @@
+/**
+ * Date and time manipulation utilities for the Taskaroo application.
+ *
+ * Provides utility functions for converting between LocalDate/LocalDateTime
+ * and timestamp milliseconds, calculating day boundaries, and formatting
+ * date/time values using the kotlinx-datetime library.
+ *
+ * All functions use the system's current timezone for conversions.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.utils
 
 import kotlinx.datetime.*
 import kotlin.time.ExperimentalTime
 
+/**
+ * Utility object for date and time operations.
+ * Functions are well-documented below with their specific purposes.
+ */
 @OptIn(ExperimentalTime::class)
 object DateTimeUtils {
     /**

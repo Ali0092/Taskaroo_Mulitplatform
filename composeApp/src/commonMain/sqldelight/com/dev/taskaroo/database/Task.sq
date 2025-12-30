@@ -1,0 +1,80 @@
+-- =============================================================================
+-- Taskaroo Database Schema
+--
+-- SQLDelight schema defining the database structure for task management.
+-- Contains two tables: Task (main tasks) and TaskItem (subtasks/checklist items).
+--
+-- Author: Muhammad Ali
+-- Date: 2025-12-30
+-- Portfolio: https://muhammadali0092.netlify.app/
+-- =============================================================================
+
+-- Task table: Stores task information with timestamp as primary key
+CREATE TABLE Task (
+    timestampMillis INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    subtitle TEXT NOT NULL,
+    category TEXT NOT NULL,
+    completedTasksCount INTEGER NOT NULL DEFAULT 0
+);
+
+-- TaskItem table: Stores subtasks/checklist items for each task
+CREATE TABLE TaskItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    taskTimestamp INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (taskTimestamp) REFERENCES Task(timestampMillis) ON DELETE CASCADE
+);
+
+-- Insert a new task
+insertTask:
+INSERT INTO Task(timestampMillis, title, subtitle, category, completedTasksCount)
+VALUES (?, ?, ?, ?, ?);
+
+-- Get a specific task by timestamp
+getTaskByTimestamp:
+SELECT * FROM Task WHERE timestampMillis = ?;
+
+-- Get all tasks ordered by timestamp
+getAllTasks:
+SELECT * FROM Task ORDER BY timestampMillis ASC;
+
+-- Get tasks for a specific date range (start and end in milliseconds)
+getTasksForDate:
+SELECT * FROM Task
+WHERE timestampMillis >= ? AND timestampMillis < ?
+ORDER BY timestampMillis ASC;
+
+-- Delete a task
+deleteTask:
+DELETE FROM Task WHERE timestampMillis = ?;
+
+-- Update completed tasks count
+updateCompletedCount:
+UPDATE Task SET completedTasksCount = ? WHERE timestampMillis = ?;
+
+-- Update task fields (excluding timestamp which is immutable)
+updateTask:
+UPDATE Task SET
+    title = ?,
+    subtitle = ?,
+    category = ?
+WHERE timestampMillis = ?;
+
+-- Insert a task item
+insertTaskItem:
+INSERT INTO TaskItem(id, taskTimestamp, text, isCompleted)
+VALUES (?, ?, ?, ?);
+
+-- Get all task items for a specific task
+getTaskItemsForTask:
+SELECT * FROM TaskItem WHERE taskTimestamp = ? ORDER BY id ASC;
+
+-- Update task item completion status
+updateTaskItemCompleted:
+UPDATE TaskItem SET isCompleted = ? WHERE id = ?;
+
+-- Delete all task items for a specific task
+deleteTaskItemsForTask:
+DELETE FROM TaskItem WHERE taskTimestamp = ?;

@@ -1,3 +1,17 @@
+/**
+ * Database operations layer for task management using SQLDelight.
+ *
+ * Provides a high-level API for CRUD operations on tasks and task items,
+ * including transaction management, Flow-based observables for real-time updates,
+ * and coroutine-based asynchronous database access.
+ *
+ * All database operations are executed on the Default dispatcher for optimal
+ * performance and to avoid blocking the main thread.
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
 package com.dev.taskaroo.database
 
 import app.cash.sqldelight.coroutines.asFlow

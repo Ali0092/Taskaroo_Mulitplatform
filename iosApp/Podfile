@@ -1,0 +1,7 @@
+platform :ios, '15.3'
+
+use_frameworks!
+
+target 'iosApp' do
+  pod 'ComposeApp', :path => '.'
+end

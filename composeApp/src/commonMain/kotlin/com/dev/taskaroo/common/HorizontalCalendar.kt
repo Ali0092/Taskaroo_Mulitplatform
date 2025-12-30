@@ -1,3 +1,12 @@
+/**
+ * Horizontal scrolling calendar widget component
+ *
+ * @author Muhammad Ali
+ * @date 2025-12-30
+ * @see <a href="https://muhammadali0092.netlify.app/">Portfolio</a>
+ */
+package com.dev.taskaroo.common
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,6 +55,13 @@ import taskaroo.composeapp.generated.resources.left_arrow
 import taskaroo.composeapp.generated.resources.right_arrow
 
 
+/**
+ * Main horizontal calendar component displaying a week view with date selection
+ *
+ * @param modifier Modifier to apply to the calendar container
+ * @param shape Shape for the date item containers
+ * @param onDateClickListener Callback invoked when a date is selected
+ */
 @Composable
 fun HorizontalCalendar(
     modifier: Modifier = Modifier,
@@ -96,6 +112,13 @@ fun HorizontalCalendar(
     }
 }
 
+/**
+ * Calendar header displaying current month/year and navigation arrows
+ *
+ * @param data The calendar UI model containing date range information
+ * @param onPrevClickListener Callback invoked when previous arrow is clicked
+ * @param onNextClickListener Callback invoked when next arrow is clicked
+ */
 @Composable
 fun Header(
     data: CalendarUiModel,
@@ -134,6 +157,13 @@ fun Header(
     }
 }
 
+/**
+ * Calendar content displaying the row of date items
+ *
+ * @param data The calendar UI model containing visible dates
+ * @param shape Shape for the date item containers
+ * @param onDateClickListener Callback invoked when a date is clicked
+ */
 @Composable
 fun Content(
     data: CalendarUiModel,
@@ -157,6 +187,13 @@ fun Content(
     }
 }
 
+/**
+ * Individual date item in the calendar displaying day name and date number
+ *
+ * @param date The date data to display
+ * @param shape Shape for the date item container
+ * @param onClickListener Callback invoked when the date item is clicked
+ */
 @Composable
 fun RowScope.ContentItem(
     date: CalendarUiModel.Date,
@@ -184,6 +221,12 @@ fun RowScope.ContentItem(
     }
 }
 
+/**
+ * UI model representing the calendar state and visible dates
+ *
+ * @property selectedDate The currently selected date
+ * @property visibleDates List of dates currently visible in the calendar
+ */
 data class CalendarUiModel(
     val selectedDate: Date,
     val visibleDates: List<Date>
@@ -191,6 +234,13 @@ data class CalendarUiModel(
     val startDate = visibleDates.first()
     val endDate = visibleDates.last()
 
+    /**
+     * Represents a single date in the calendar
+     *
+     * @property date The LocalDate instance
+     * @property isSelected Whether this date is currently selected
+     * @property isToday Whether this date is today
+     */
     data class Date(
         val date: LocalDate,
         val isSelected: Boolean,
@@ -200,11 +250,24 @@ data class CalendarUiModel(
     }
 }
 
+/**
+ * Data source for generating calendar UI models
+ */
 class CalendarDataSource {
 
+    /**
+     * Returns today's date
+     */
     val today: LocalDate
         get() = todayDate()
 
+    /**
+     * Generates calendar data for a week starting from the specified date
+     *
+     * @param startDate The first date to display in the calendar
+     * @param lastSelectedDate The date that should be marked as selected
+     * @return CalendarUiModel containing the week's dates and selection state
+     */
     fun getData(
         startDate: LocalDate = today,
         lastSelectedDate: LocalDate
@@ -222,6 +285,13 @@ class CalendarDataSource {
         )
     }
 
+    /**
+     * Converts a LocalDate to a CalendarUiModel.Date
+     *
+     * @param date The date to convert
+     * @param isSelected Whether this date should be marked as selected
+     * @return CalendarUiModel.Date with appropriate flags set
+     */
     private fun toItem(date: LocalDate, isSelected: Boolean) =
         CalendarUiModel.Date(
             date = date,
