@@ -15,9 +15,9 @@ A modern, cross-platform task management application built with Kotlin Multiplat
 - **Local Database**: SQLDelight-powered local persistence for fast, offline-first task management
 - **Modern UI**: Clean Material Design 3 interface with custom theming
 
-## Screenshots
+## Demo
 
-> **Note**: Add your screenshots here to showcase the app's interface on both Android and iOS platforms.
+https://github.com/user-attachments/assets/c02b874a-bb53-491f-8a1c-a070e1bcbe85
 
 ## Technology Stack
 
