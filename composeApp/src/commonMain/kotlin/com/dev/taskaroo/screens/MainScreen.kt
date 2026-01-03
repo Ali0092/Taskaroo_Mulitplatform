@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.no_data_placeholder
+import taskaroo.composeapp.generated.resources.settings_icon
 
 /**
  * Main screen displaying task list with filtering and management capabilities.
@@ -147,9 +148,11 @@ class MainScreen : Screen {
                 TopAppBar(
                     title = "Make every day count forward✨",
                     canShowNavigationIcon = false,
-                    otherIcon = null,
+                    otherIcon = Res.drawable.settings_icon,
                     onOtherIconClick = {
                         // later this will be added...
+                        navigator.push(SettingsScreen())
+
                     }
                 )
 

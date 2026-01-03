@@ -9,7 +9,7 @@
 
     <style name="AppDatePickerStyle" parent="android:Widget.Material.DatePicker">
         <item name="android:headerBackground">#6B806B</item>
-        <item name="android:calendarTextColor">#454545</item>
+        <item name="android:calendarTextColor">#FFFFFF</item>
     </style>
 
     <!-- Time Picker Theme -->
@@ -21,6 +21,6 @@
 
     <style name="AppTimePickerStyle" parent="android:Widget.Material.TimePicker">
         <item name="android:headerBackground">#6B806B</item>
-        <item name="android:numbersTextColor">#454545</item>
+        <item name="android:numbersTextColor">#FFFFFF</item>
     </style>
 </resources>
