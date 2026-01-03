@@ -69,7 +69,6 @@ import com.dev.taskaroo.mediumPriorityBackground
 import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -115,7 +114,7 @@ fun TopAppBar(
                 Icon(
                     painter = painterResource(Res.drawable.back_button),
                     contentDescription = "Back",
-                    tint = onBackgroundColor
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -235,7 +234,7 @@ fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
                     .size(20.dp),
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = onBackgroundColor
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -314,7 +313,7 @@ fun TaskChipRow(
             ) {
                 Text(
                     text = category,
-                    color = if (isSelected) Color.Black else onBackgroundColor,
+                    color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onBackground,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -346,7 +345,7 @@ fun TaskCardConcise(
             onLongClick = { onLongClick() }
         ),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier
@@ -360,7 +359,7 @@ fun TaskCardConcise(
                 text = taskData.title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             // Task Details Section
@@ -419,7 +418,7 @@ fun TaskCard(
                 onLongClick = { onLongClick() }
             ),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -433,14 +432,14 @@ fun TaskCard(
                 text = taskData.title,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = taskData.subtitle,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 4.dp),
@@ -490,7 +489,7 @@ fun TaskCard(
                             text = taskData.category,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = onBackgroundColor
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -517,13 +516,13 @@ fun TaskCard(
                             text = "Deadline",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = onBackgroundColor.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         )
                         Text(
                             text = taskData.deadline,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = onBackgroundColor
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -544,7 +543,7 @@ fun TaskCard(
                         text = "Task Details",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     // Progress Indicator
@@ -561,7 +560,7 @@ fun TaskCard(
                         text = taskData.progressText,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )
 
                     // Task Items
@@ -719,7 +718,7 @@ fun TaskItemRow(
             text = taskItem.text,
             fontSize = if (isConciseItem) 13.sp else 16.sp,
             fontWeight = FontWeight.Medium,
-            color = if (isChecked) onBackgroundColor.copy(alpha = 0.5f) else onBackgroundColor,
+            color = if (isChecked) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onBackground,
             textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

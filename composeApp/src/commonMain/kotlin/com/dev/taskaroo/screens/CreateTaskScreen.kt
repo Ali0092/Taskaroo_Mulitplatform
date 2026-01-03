@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -54,17 +55,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.KeyboardType
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -232,7 +230,7 @@ class CreateTaskScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(backgroundColor)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(innerPaddings)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .verticalScroll(scrollState),
@@ -423,7 +421,7 @@ class CreateTaskScreen(
                         text = "Priority",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     val priorities = listOf("Urgent", "High", "Medium", "Low")
@@ -444,7 +442,7 @@ class CreateTaskScreen(
                                     )
                                     .border(
                                         width = 1.dp,
-                                        color = if (isSelected) primaryLiteColorVariant else onBackgroundColor.copy(alpha = 0.3f),
+                                        color = if (isSelected) primaryLiteColorVariant else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                                         shape = CircleShape
                                     )
                                     .clip(CircleShape)
@@ -457,7 +455,7 @@ class CreateTaskScreen(
                                     text = priority,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = if (isSelected) primaryColorVariant else onBackgroundColor
+                                    color = if (isSelected) primaryColorVariant else MaterialTheme.colorScheme.onBackground
                                 )
                             }
                         }
@@ -472,7 +470,7 @@ class CreateTaskScreen(
                         text = "Deadline & Time",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Row(
@@ -500,9 +498,9 @@ class CreateTaskScreen(
                             },
                             colors = OutlinedTextFieldDefaults.colors(
                                 disabledBorderColor = if (isEditMode)
-                                    onBackgroundColor.copy(alpha = 0.3f)
-                                    else onBackgroundColor,
-                                disabledTextColor = onBackgroundColor,
+                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+                                    else MaterialTheme.colorScheme.onBackground,
+                                disabledTextColor = MaterialTheme.colorScheme.onBackground,
                                 disabledLeadingIconColor = primaryColorVariant
                             ),
                             shape = RoundedCornerShape(12.dp)
@@ -529,9 +527,9 @@ class CreateTaskScreen(
                             },
                             colors = OutlinedTextFieldDefaults.colors(
                                 disabledBorderColor = if (isEditMode)
-                                    onBackgroundColor.copy(alpha = 0.3f)
-                                    else onBackgroundColor,
-                                disabledTextColor = onBackgroundColor,
+                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+                                    else MaterialTheme.colorScheme.onBackground,
+                                disabledTextColor = MaterialTheme.colorScheme.onBackground,
                                 disabledLeadingIconColor = primaryColorVariant
                             ),
                             shape = RoundedCornerShape(12.dp)
@@ -547,7 +545,7 @@ class CreateTaskScreen(
                         text = "Task Title",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     OutlinedTextField(
@@ -557,13 +555,13 @@ class CreateTaskScreen(
                         placeholder = {
                             Text(
                                 text = "Enter task title",
-                                color = onBackgroundColor.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = onBackgroundColor,
-                            unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                            cursorColor = onBackgroundColor
+                            focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                            cursorColor = MaterialTheme.colorScheme.onBackground
                         ),
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Next
@@ -580,7 +578,7 @@ class CreateTaskScreen(
                         text = "Description",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     OutlinedTextField(
@@ -592,13 +590,13 @@ class CreateTaskScreen(
                         placeholder = {
                             Text(
                                 text = "Enter task description",
-                                color = onBackgroundColor.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = onBackgroundColor,
-                            unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                            cursorColor = onBackgroundColor
+                            focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                            cursorColor = MaterialTheme.colorScheme.onBackground
                         ),
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Done
@@ -620,7 +618,7 @@ class CreateTaskScreen(
                             text = "Task Details",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = onBackgroundColor
+                            color = MaterialTheme.colorScheme.onBackground
                         )
 
                         TextButton(
@@ -675,13 +673,13 @@ class CreateTaskScreen(
                                         placeholder = {
                                             Text(
                                                 text = "Task item ${index + 1}",
-                                                color = onBackgroundColor.copy(alpha = 0.5f)
+                                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                                             )
                                         },
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = onBackgroundColor,
-                                            unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                            cursorColor = onBackgroundColor
+                                            focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                                            cursorColor = MaterialTheme.colorScheme.onBackground
                                         ),
                                         shape = RoundedCornerShape(8.dp),
                                         singleLine = true

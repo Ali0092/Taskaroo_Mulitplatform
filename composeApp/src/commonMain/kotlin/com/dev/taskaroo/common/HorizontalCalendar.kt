@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,14 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dev.taskaroo.backgroundColor
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -77,7 +75,7 @@ fun HorizontalCalendar(
         modifier = modifier.fillMaxWidth()
             .wrapContentHeight()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(12.dp)
     ) {
 
@@ -133,7 +131,7 @@ fun Header(
             style = TextStyle(
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor
+                color = MaterialTheme.colorScheme.onBackground
             )
         )
 
@@ -204,20 +202,20 @@ fun RowScope.ContentItem(
         modifier = Modifier
             .weight(1f)
             .padding(4.dp)
-            .background(backgroundColor,shape)
+            .background(MaterialTheme.colorScheme.background,shape)
             .clip(shape)
             .border(
-                if (date.isSelected) 1.5.dp else 0.5.dp,
-                if (date.isSelected) primary else primaryLiteColorVariant,
+                if (date.isSelected) 2.dp else 1.dp,
+                if (date.isSelected) primaryColorVariant else primaryLiteColorVariant,
                 shape
             )
             .clickable { onClickListener(date) }
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = primaryColorVariant))
+        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = primary))
         Spacer(Modifier.height(8.dp))
-        Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = onBackgroundColor))
+        Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground))
     }
 }
 

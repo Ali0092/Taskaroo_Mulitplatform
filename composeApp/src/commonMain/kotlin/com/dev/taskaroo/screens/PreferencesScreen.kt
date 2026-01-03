@@ -56,9 +56,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.modal.PrefsModel
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.onPrimary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.selectedItemColor
@@ -97,13 +95,13 @@ class PreferencesScreen: Screen {
         )
 
         Scaffold { paddingValues ->
-            Column(modifier = Modifier.fillMaxSize().background(backgroundColor).padding(paddingValues).padding(horizontal = 16.dp)) {
+            Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(paddingValues).padding(horizontal = 16.dp)) {
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
                     text = "How do you plan to user Taskaroo?",
                     fontSize = 21.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = onBackgroundColor
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -174,7 +172,7 @@ fun PreferenceSingleItem(icon: DrawableResource, title: String, onSelected: (Str
             .background(Color.Transparent),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = if(isChecked) selectedItemColor else Color.Transparent),
-        border = BorderStroke(width = 0.5.dp, color = onBackgroundColor),
+        border = BorderStroke(width = 0.5.dp, color = MaterialTheme.colorScheme.onBackground),
     ) {
 
         Row(modifier = Modifier
@@ -190,7 +188,7 @@ fun PreferenceSingleItem(icon: DrawableResource, title: String, onSelected: (Str
             Text(text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = onBackgroundColor
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(Modifier.weight(1f))
 

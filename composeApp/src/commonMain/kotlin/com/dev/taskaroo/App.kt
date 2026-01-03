@@ -26,6 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.Navigator
 import com.dev.taskaroo.database.ProvideDatabaseHelper
+import com.dev.taskaroo.preferences.AppSettings
+import com.dev.taskaroo.preferences.ThemeMode
+import com.dev.taskaroo.preferences.getPreferencesManager
 import com.dev.taskaroo.screens.IntroScreen
 import com.dev.taskaroo.screens.MainScreen
 import org.jetbrains.compose.resources.painterResource
@@ -48,7 +51,33 @@ import taskaroo.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+
+    val preferencesManager = remember { getPreferencesManager() }
+    var currentTheme by remember { mutableStateOf(ThemeMode.SYSTEM) }
+
+    // Initial theme setup
+    LaunchedEffect(Unit) {
+        val initialSettings = preferencesManager.getCurrentSettings()
+        currentTheme = initialSettings.themeMode
+        preferencesManager.onThemeChanged { newTheme ->
+            println("DictionaryApp: Theme change callback received: $newTheme")
+            currentTheme = newTheme
+        }
+    }
+
+    // Also observe StateFlow as backup
+    val settings by preferencesManager.settingsFlow.collectAsState(AppSettings())
+    LaunchedEffect(settings.themeMode) {
+        if (settings.themeMode != currentTheme) {
+            println("DictionaryApp: StateFlow theme changed to ${settings.themeMode}")
+            currentTheme = settings.themeMode
+        }
+    }
+
+
+    TaskarooAppTheme(
+        themeMode = currentTheme
+    ) {
         ProvideDatabaseHelper {
             Navigator(screen = MainScreen())
         }

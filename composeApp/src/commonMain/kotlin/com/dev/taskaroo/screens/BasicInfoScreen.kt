@@ -49,8 +49,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.dev.taskaroo.backgroundColor
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.onPrimary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -81,7 +79,7 @@ class BasicInfoScreen : Screen {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(backgroundColor)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -135,7 +133,7 @@ class BasicInfoScreen : Screen {
                             cursorColor = primaryColorVariant,
                             focusedLabelColor = primaryColorVariant,
                             unfocusedLabelColor = primaryColorVariant,
-                            focusedTextColor = onBackgroundColor,
+                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedTextColor = primaryLiteColorVariant,
                         ),
                         shape = RoundedCornerShape(12.dp),
@@ -168,7 +166,7 @@ class BasicInfoScreen : Screen {
                             cursorColor = primaryColorVariant,
                             focusedLabelColor = primaryColorVariant,
                             unfocusedLabelColor = primaryColorVariant,
-                            focusedTextColor = onBackgroundColor,
+                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedTextColor = primaryLiteColorVariant,
                         ),
                         shape = RoundedCornerShape(12.dp),

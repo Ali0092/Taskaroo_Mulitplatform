@@ -14,15 +14,26 @@
  */
 package com.dev.taskaroo
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.dev.taskaroo.preferences.ThemeMode
 
 /**
  * Core background colors
  */
 /** Main background color for screens and surfaces */
-val backgroundColor: Color = Color(0xFFF3F3F3)
+val backgroundColorLite: Color = Color(0xFFF3F3F3)
+val backgroundColorDark: Color = Color(0xFF282828)
 /** Text and content color on background surfaces */
-val onBackgroundColor: Color = Color(0xFF454545)
+val onBackgroundColorLite: Color = Color(0xFF454545)
+val onBackgroundColorDark: Color = Color(0xFFF3F3F3)
+
+val surfaceColorLite: Color = Color(0xFFFFFFFF)
+val surfaceColorDark: Color = Color(0xFF3E3E3E)
 
 /**
  * Primary colors
@@ -62,3 +73,56 @@ val mediumPriorityBackground = Color(0xFFFFF8E1)
 val lowPriorityColor = Color(0xFF757575)
 /** Background color for low priority task chips */
 val lowPriorityBackground = Color(0xFFFAFAFA)
+
+
+private val darkColorScheme = darkColorScheme(
+    primary = primaryColorVariant,
+//    secondary = GenZSecondary,
+//    tertiary = GenZAccent,
+    background = backgroundColorDark,
+    surface = surfaceColorDark,
+    onBackground = onBackgroundColorDark,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.Black
+)
+
+private val lightColorScheme = lightColorScheme(
+    primary = primary,
+//    secondary = GenZSecondary,
+//    tertiary = GenZAccent,
+    background = backgroundColorLite,
+    surface = surfaceColorLite,
+    onBackground = onBackgroundColorLite,
+    onSurface = Color.Black,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.Black
+)
+
+
+@Composable
+fun TaskarooAppTheme(
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    content: @Composable () -> Unit
+) {
+    val systemInDarkTheme = isSystemInDarkTheme()
+
+    val darkTheme = when (themeMode) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> systemInDarkTheme
+    }
+
+    val colorScheme = when {
+        // Use our custom Gen Z color schemes
+        darkTheme -> darkColorScheme
+        else -> lightColorScheme
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = MaterialTheme.typography,
+        content = content
+    )
+}

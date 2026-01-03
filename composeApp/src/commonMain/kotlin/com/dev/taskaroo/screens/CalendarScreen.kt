@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,20 +46,16 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.HorizontalCalendar
 import com.dev.taskaroo.common.TaskCardConcise
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primaryLiteColorVariant
-import com.dev.taskaroo.screens.CreateTaskScreen
 import com.dev.taskaroo.utils.DateTimeUtils
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 
@@ -145,7 +142,7 @@ class CalendarScreen : Screen {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(backgroundColor)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(innerPaddings)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -173,7 +170,7 @@ class CalendarScreen : Screen {
                     style = TextStyle(
                         fontSize = 19.sp,
                         fontWeight = FontWeight.Normal,
-                        color = onBackgroundColor
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 )
 
@@ -285,7 +282,7 @@ fun HourColumnItem(
                 text = hour,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Normal,
-                color = onBackgroundColor,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.End
             )
 

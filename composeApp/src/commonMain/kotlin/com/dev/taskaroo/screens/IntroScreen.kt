@@ -41,10 +41,8 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.DotIndicator
 import com.dev.taskaroo.modal.PagerModel
-import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.onPrimary
 import com.dev.taskaroo.primaryColorVariant
 import org.jetbrains.compose.resources.DrawableResource
@@ -97,7 +95,7 @@ class IntroScreen : Screen {
         Scaffold { paddingValues ->
             Column(
                 modifier = Modifier.fillMaxSize()
-                .background(backgroundColor)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -109,7 +107,7 @@ class IntroScreen : Screen {
                 Text(
                     modifier = Modifier.padding(top = 12.dp),
                     text = "Manage Tasks & goals\n with Taskaroo",
-                    color = onBackgroundColor,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
