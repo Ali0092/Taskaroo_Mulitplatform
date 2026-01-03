@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Date Picker Theme -->
+    <style name="AppDatePickerTheme" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:colorPrimary">#6B806B</item>
+        <item name="android:colorAccent">#6B806B</item>
+        <item name="android:datePickerStyle">@style/AppDatePickerStyle</item>
+    </style>
+
+    <style name="AppDatePickerStyle" parent="android:Widget.Material.DatePicker">
+        <item name="android:headerBackground">#6B806B</item>
+        <item name="android:calendarTextColor">#454545</item>
+    </style>
+
+    <!-- Time Picker Theme -->
+    <style name="AppTimePickerTheme" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:colorPrimary">#6B806B</item>
+        <item name="android:colorAccent">#6B806B</item>
+        <item name="android:timePickerStyle">@style/AppTimePickerStyle</item>
+    </style>
+
+    <style name="AppTimePickerStyle" parent="android:Widget.Material.TimePicker">
+        <item name="android:headerBackground">#6B806B</item>
+        <item name="android:numbersTextColor">#454545</item>
+    </style>
+</resources>

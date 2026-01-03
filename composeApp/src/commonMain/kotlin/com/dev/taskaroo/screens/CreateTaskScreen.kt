@@ -13,6 +13,7 @@
  */
 package com.dev.taskaroo.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -47,6 +48,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -66,6 +68,8 @@ import com.dev.taskaroo.onBackgroundColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.utils.NativeDatePicker
+import com.dev.taskaroo.utils.NativeTimePicker
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -76,7 +80,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
-import taskaroo.composeapp.generated.resources.add_icon
+import taskaroo.composeapp.generated.resources.calendar
+import taskaroo.composeapp.generated.resources.clock
 import taskaroo.composeapp.generated.resources.close_icon
 import taskaroo.composeapp.generated.resources.delete_icon
 import taskaroo.composeapp.generated.resources.tick_icon
@@ -140,8 +145,13 @@ class CreateTaskScreen(
             val today = todayDate()
             mutableStateOf("${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}")
         }
-        var selectedHour by remember { mutableStateOf(12) }  // 0-23
-        var selectedMinute by remember { mutableStateOf(0) } // 0-59
+        var selectedHour by remember { mutableStateOf(12) }     // 1-12
+        var selectedMinute by remember { mutableStateOf(0) }    // 0-59
+        var selectedAmPm by remember { mutableStateOf("PM") }   // "AM" or "PM"
+
+        // Picker dialog states
+        var showDatePicker by remember { mutableStateOf(false) }
+        var showTimePicker by remember { mutableStateOf(false) }
 
         // Task details checklist
         var taskDetailItems by remember { mutableStateOf(listOf("")) }
@@ -155,6 +165,42 @@ class CreateTaskScreen(
         // Delete dialog state
         var showDeleteDialog by remember { mutableStateOf(false) }
 
+        // Conversion utility functions
+        fun convertTo24Hour(hour12: Int, amPm: String): Int {
+            return when {
+                amPm == "AM" && hour12 == 12 -> 0
+                amPm == "AM" -> hour12
+                amPm == "PM" && hour12 == 12 -> 12
+                else -> hour12 + 12
+            }
+        }
+
+        fun convertTo12Hour(hour24: Int): Pair<Int, String> {
+            return when {
+                hour24 == 0 -> Pair(12, "AM")
+                hour24 < 12 -> Pair(hour24, "AM")
+                hour24 == 12 -> Pair(12, "PM")
+                else -> Pair(hour24 - 12, "PM")
+            }
+        }
+
+        fun formatDateDisplay(dateString: String): String {
+            // Convert "2024-12-15" to "Dec 15, 2024"
+            val parts = dateString.split("-")
+            if (parts.size != 3) return dateString
+            val year = parts[0]
+            val month = parts[1].toIntOrNull() ?: return dateString
+            val day = parts[2].toIntOrNull() ?: return dateString
+
+            val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            return "${monthNames.getOrNull(month - 1) ?: month} $day, $year"
+        }
+
+        fun formatTimeDisplay(hour: Int, minute: Int, amPm: String): String {
+            return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} $amPm"
+        }
+
         // Pre-fill form when task is loaded in edit mode
         LaunchedEffect(existingTask) {
             existingTask?.let { task ->
@@ -166,8 +212,12 @@ class CreateTaskScreen(
                 val instant = Instant.fromEpochMilliseconds(task.timestampMillis)
                 val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
                 selectedDate = "${dateTime.year}-${dateTime.monthNumber.toString().padStart(2, '0')}-${dateTime.dayOfMonth.toString().padStart(2, '0')}"
-                selectedHour = dateTime.hour
+
+                // Convert 24-hour to 12-hour format
+                val (hour12, amPm) = convertTo12Hour(dateTime.hour)
+                selectedHour = hour12
                 selectedMinute = dateTime.minute
+                selectedAmPm = amPm
 
                 // Pre-fill checklist items
                 taskDetailItems = if (task.taskList.isEmpty()) {
@@ -243,9 +293,11 @@ class CreateTaskScreen(
                                         }
 
                                         // Create LocalDateTime with selected date and time
+                                        // Convert 12-hour format to 24-hour for storage
+                                        val hour24 = convertTo24Hour(selectedHour, selectedAmPm)
                                         val localDateTime = LocalDateTime(
                                             year, month, day,
-                                            selectedHour, selectedMinute, 0, 0
+                                            hour24, selectedMinute, 0, 0
                                         )
 
                                         // Convert to timestamp in milliseconds (or use existing in edit mode)
@@ -395,6 +447,7 @@ class CreateTaskScreen(
                                         color = if (isSelected) primaryLiteColorVariant else onBackgroundColor.copy(alpha = 0.3f),
                                         shape = CircleShape
                                     )
+                                    .clip(CircleShape)
                                     .clickable {
                                         selectedPriority = priority
                                     },
@@ -411,48 +464,12 @@ class CreateTaskScreen(
                     }
                 }
 
-                // Deadline Selection
+                // Date and Time Selection - Combined Row
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Deadline",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = onBackgroundColor
-                    )
-
-                    OutlinedTextField(
-                        value = selectedDate,
-                        onValueChange = { if (!isEditMode) selectedDate = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isEditMode,
-                        placeholder = {
-                            Text(
-                                text = "Enter deadline (e.g., 2024-12-15)",
-                                color = onBackgroundColor.copy(alpha = 0.5f)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = onBackgroundColor,
-                            unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                            cursorColor = onBackgroundColor,
-                            disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                            disabledTextColor = onBackgroundColor
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Next
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                }
-
-                // Time Selection
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Time",
+                        text = "Deadline & Time",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = onBackgroundColor
@@ -462,56 +479,60 @@ class CreateTaskScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Hour picker
+                        // Date Field with Calendar Icon
                         OutlinedTextField(
-                            value = selectedHour.toString().padStart(2, '0'),
-                            onValueChange = { value ->
-                                if (!isEditMode) {
-                                    value.toIntOrNull()?.let { hour ->
-                                        if (hour in 0..23) selectedHour = hour
+                            value = formatDateDisplay(selectedDate),
+                            onValueChange = { },
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    if (!isEditMode) {
+                                        showDatePicker = true
                                     }
-                                }
+                                },
+                            enabled = false,
+                            leadingIcon = {
+                                Image(
+                                    painter = painterResource(Res.drawable.calendar),
+                                    contentDescription = "Calendar",
+                                    modifier = Modifier.size(20.dp)
+                                )
                             },
-                            modifier = Modifier.weight(1f),
-                            enabled = !isEditMode,
-                            label = { Text("Hour (00-23)", fontSize = 12.sp) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = onBackgroundColor,
-                                unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                cursorColor = onBackgroundColor,
-                                disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                disabledTextColor = onBackgroundColor
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
+                                disabledBorderColor = if (isEditMode)
+                                    onBackgroundColor.copy(alpha = 0.3f)
+                                    else onBackgroundColor,
+                                disabledTextColor = onBackgroundColor,
+                                disabledLeadingIconColor = primaryColorVariant
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )
 
-                        // Minute picker
+                        // Time Field with Clock Icon
                         OutlinedTextField(
-                            value = selectedMinute.toString().padStart(2, '0'),
-                            onValueChange = { value ->
-                                if (!isEditMode) {
-                                    value.toIntOrNull()?.let { minute ->
-                                        if (minute in 0..59) selectedMinute = minute
+                            value = formatTimeDisplay(selectedHour, selectedMinute, selectedAmPm),
+                            onValueChange = { },
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    if (!isEditMode) {
+                                        showTimePicker = true
                                     }
-                                }
+                                },
+                            enabled = false,
+                            leadingIcon = {
+                                Image(
+                                    painter = painterResource(Res.drawable.clock),
+                                    contentDescription = "Clock",
+                                    modifier = Modifier.size(20.dp)
+                                )
                             },
-                            modifier = Modifier.weight(1f),
-                            enabled = !isEditMode,
-                            label = { Text("Minute (00-59)", fontSize = 12.sp) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = onBackgroundColor,
-                                unfocusedBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                cursorColor = onBackgroundColor,
-                                disabledBorderColor = onBackgroundColor.copy(alpha = 0.3f),
-                                disabledTextColor = onBackgroundColor
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done
+                                disabledBorderColor = if (isEditMode)
+                                    onBackgroundColor.copy(alpha = 0.3f)
+                                    else onBackgroundColor,
+                                disabledTextColor = onBackgroundColor,
+                                disabledLeadingIconColor = primaryColorVariant
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -710,6 +731,45 @@ class CreateTaskScreen(
                                 showDeleteDialog = false
                             }
                         }
+                    }
+                )
+            }
+
+            // Date Picker Dialog
+            if (showDatePicker) {
+                val dateParts = selectedDate.split("-")
+                val initialYear = dateParts.getOrNull(0)?.toIntOrNull() ?: 2024
+                val initialMonth = dateParts.getOrNull(1)?.toIntOrNull() ?: 1
+                val initialDay = dateParts.getOrNull(2)?.toIntOrNull() ?: 1
+
+                NativeDatePicker(
+                    initialYear = initialYear,
+                    initialMonth = initialMonth,
+                    initialDay = initialDay,
+                    onDateSelected = { year, month, day ->
+                        selectedDate = "$year-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
+                        showDatePicker = false
+                    },
+                    onDismiss = {
+                        showDatePicker = false
+                    }
+                )
+            }
+
+            // Time Picker Dialog
+            if (showTimePicker) {
+                NativeTimePicker(
+                    initialHour = selectedHour,
+                    initialMinute = selectedMinute,
+                    initialAmPm = selectedAmPm,
+                    onTimeSelected = { hour, minute, amPm ->
+                        selectedHour = hour
+                        selectedMinute = minute
+                        selectedAmPm = amPm
+                        showTimePicker = false
+                    },
+                    onDismiss = {
+                        showTimePicker = false
                     }
                 )
             }

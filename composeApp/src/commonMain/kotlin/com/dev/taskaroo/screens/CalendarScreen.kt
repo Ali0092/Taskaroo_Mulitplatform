@@ -12,7 +12,6 @@
  */
 package com.dev.taskaroo.screens
 
-import HorizontalCalendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +47,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.backgroundColor
 import com.dev.taskaroo.common.DeleteConfirmationDialog
+import com.dev.taskaroo.common.HorizontalCalendar
 import com.dev.taskaroo.common.TaskCardConcise
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
