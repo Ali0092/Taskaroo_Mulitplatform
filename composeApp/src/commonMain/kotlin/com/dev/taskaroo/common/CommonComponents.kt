@@ -360,6 +360,8 @@ fun TaskCardConcise(
                 modifier = Modifier.wrapContentWidth(),
                 text = taskData.title,
                 fontSize = 14.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -385,7 +387,7 @@ fun TaskCardConcise(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Deadline: "+taskData.deadline,
+                text = "Due: "+taskData.deadline,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
                 color = primaryColorVariant
@@ -434,6 +436,8 @@ fun TaskCard(
                     .padding(horizontal = 16.dp),
                 text = taskData.title,
                 fontSize = 20.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -443,6 +447,8 @@ fun TaskCard(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 4.dp),
@@ -516,7 +522,7 @@ fun TaskCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Deadline",
+                            text = "Due",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
