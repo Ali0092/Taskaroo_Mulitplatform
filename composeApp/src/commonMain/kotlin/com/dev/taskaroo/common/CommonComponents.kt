@@ -177,13 +177,15 @@ fun DeleteConfirmationDialog(
                 Text(
                     text = "Delete Task",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             },
             text = {
                 Text(
                     text = "Are you sure you want to delete \"$taskTitle\" permanently?",
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                 )
             },
             confirmButton = {
@@ -204,7 +206,7 @@ fun DeleteConfirmationDialog(
                     Text("Cancel")
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.background,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -413,6 +415,7 @@ fun TaskCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
                 onClick = { onClick() },
                 onLongClick = { onLongClick() }

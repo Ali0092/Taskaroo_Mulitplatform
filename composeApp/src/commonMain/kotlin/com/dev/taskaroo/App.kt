@@ -14,6 +14,7 @@ package com.dev.taskaroo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
 import com.dev.taskaroo.screens.IntroScreen
 import com.dev.taskaroo.screens.MainScreen
+import com.dev.taskaroo.utils.SetupSystemBars
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -74,6 +76,16 @@ fun App() {
         }
     }
 
+    // Calculate effective dark theme state for system bars
+    val systemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = when (currentTheme) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> systemInDarkTheme
+    }
+
+    // Update system bars based on theme (Android only)
+    SetupSystemBars(darkTheme = darkTheme)
 
     TaskarooAppTheme(
         themeMode = currentTheme

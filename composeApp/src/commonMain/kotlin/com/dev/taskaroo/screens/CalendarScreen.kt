@@ -200,7 +200,7 @@ class CalendarScreen : Screen {
                                 }
                             },
                             onTaskClick = { taskData ->
-                                navigator.push(CreateTaskScreen(taskTimestampToEdit = taskData.timestampMillis))
+                                navigator.push(PreviewTaskScreen(taskTimestampToEdit = taskData.timestampMillis))
                             },
                             onTaskLongClick = { taskData ->
                                 taskToDelete = taskData

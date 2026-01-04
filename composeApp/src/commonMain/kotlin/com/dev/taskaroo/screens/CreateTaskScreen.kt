@@ -370,7 +370,14 @@ class CreateTaskScreen(
                                         }
 
                                         // Navigate back only on success
-                                        navigator.pop()
+                                        if (isEditMode) {
+                                            // Pop twice: CreateTaskScreen -> PreviewTaskScreen -> MainScreen
+                                            navigator.pop()
+                                            navigator.pop()
+                                        } else {
+                                            // Pop once for creating new task
+                                            navigator.pop()
+                                        }
                                     } else {
                                         errorMessage = "Invalid date format. Use YYYY-MM-DD"
                                         isSaving = false

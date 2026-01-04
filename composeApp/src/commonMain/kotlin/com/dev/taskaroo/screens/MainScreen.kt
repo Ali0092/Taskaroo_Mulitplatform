@@ -288,7 +288,7 @@ class MainScreen : Screen {
                                     }
                                 },
                                 onClick = {
-                                    navigator.push(CreateTaskScreen(taskTimestampToEdit = task.timestampMillis))
+                                    navigator.push(PreviewTaskScreen(taskTimestampToEdit = task.timestampMillis))
                                 },
                                 onLongClick = {
                                     taskToDelete = task
