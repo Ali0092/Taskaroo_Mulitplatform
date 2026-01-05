@@ -8,7 +8,6 @@
 package com.dev.taskaroo.common
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -61,6 +60,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.alpha
 import com.dev.taskaroo.highPriorityBackground
 import com.dev.taskaroo.highPriorityColor
 import com.dev.taskaroo.lowPriorityBackground
@@ -360,10 +360,21 @@ fun TaskCardConcise(
                 modifier = Modifier.wrapContentWidth(),
                 text = taskData.title,
                 fontSize = 14.sp,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onBackground
+            )
+
+            // Subtitle
+            Text(
+                modifier = Modifier.wrapContentWidth(),
+                text = taskData.subtitle,
+                fontSize = 12.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
 
             // Task Details Section
@@ -373,7 +384,7 @@ fun TaskCardConcise(
                     modifier = Modifier.padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    taskData.taskList.forEach { taskItem ->
+                    taskData.taskList.take(2).forEach { taskItem ->
                         TaskItemRow(
                             taskItem = taskItem,
                             isConciseItem = true,
@@ -409,6 +420,7 @@ fun TaskCardConcise(
 @Composable
 fun TaskCard(
     taskData: TaskData,
+    onTaskDoneToggle: (Boolean) -> Unit = {},
     onTaskItemToggle: (String, Boolean) -> Unit = { _, _ -> },
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
@@ -418,6 +430,7 @@ fun TaskCard(
             .fillMaxWidth()
             .padding(top = 16.dp)
             .clip(RoundedCornerShape(12.dp))
+            .alpha(if (taskData.isDone) 0.5f else 1f)
             .combinedClickable(
                 onClick = { onClick() },
                 onLongClick = { onLongClick() }
@@ -429,30 +442,43 @@ fun TaskCard(
             modifier = Modifier.fillMaxWidth()
                 .then(if (taskData.taskList.isNotEmpty()) Modifier.padding(top = 16.dp) else Modifier.padding(vertical = 16.dp))
         ) {
-            // Title and Subtitle
-            Text(
+            // Title, Subtitle and Done Checkbox
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                text = taskData.title,
-                fontSize = 20.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = taskData.title,
+                        fontSize = 20.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
+                    )
 
-            Text(
-                text = taskData.subtitle,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 4.dp),
-            )
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(
+                        text = taskData.subtitle,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                CircularCheckbox(
+                    checked = taskData.isDone,
+                    onCheckedChange = { onTaskDoneToggle(it) },
+                    modifier = Modifier.size(24.dp).padding(start = 8.dp)
+                )
+            }
 
             // Category and Deadline Row
             Row(
@@ -577,7 +603,7 @@ fun TaskCard(
                         modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        taskData.taskList.forEach { taskItem ->
+                        taskData.taskList.take(2).forEach { taskItem ->
                             TaskItemRow(
                                 taskItem = taskItem,
                                 onToggle = { isChecked ->
@@ -594,7 +620,6 @@ fun TaskCard(
 
 /**
  * Custom circular checkbox with animated check mark
- *
  * @param checked Whether the checkbox is currently checked
  * @param onCheckedChange Callback invoked when checkbox state changes
  * @param modifier Modifier to apply to the checkbox
@@ -605,12 +630,6 @@ fun CircularCheckbox(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (checked) 1.1f else 1f,
-        animationSpec = tween(durationMillis = 200),
-        label = "checkbox_scale"
-    )
-
     Box(
         modifier = modifier
             .size(24.dp)
@@ -702,6 +721,7 @@ fun CapsuleFloatingActionButton(
  */
 @Composable
 fun TaskItemRow(
+    modifier: Modifier = Modifier,
     taskItem: TaskItem,
     isConciseItem: Boolean = false,
     onToggle: (Boolean) -> Unit
@@ -709,7 +729,7 @@ fun TaskItemRow(
     var isChecked by remember { mutableStateOf(taskItem.isCompleted) }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -31,8 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,7 +61,6 @@ import com.dev.taskaroo.lowPriorityColor
 import com.dev.taskaroo.mediumPriorityBackground
 import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
-import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
 import kotlinx.coroutines.launch
@@ -192,18 +189,53 @@ class PreviewTaskScreen(
                         else -> Color.Gray to Color.LightGray
                     }
 
-                    // Priority Chip
+
+                    // Deadline Section
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(vertical = 16.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = "Priority",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        // Date
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.calendar),
+                                contentDescription = "Calendar",
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Text(
+                                text = formatDateDisplay(task.timestampMillis),
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                        }
+
+                        // Time
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.clock),
+                                contentDescription = "Clock",
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Text(
+                                text = formatTimeDisplay(task.timestampMillis),
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
 
                         Box(
                             modifier = Modifier
@@ -240,53 +272,6 @@ class PreviewTaskScreen(
                         }
                     }
 
-                    // Deadline Section
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Date
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(Res.drawable.calendar),
-                                contentDescription = "Calendar",
-                                modifier = Modifier.size(20.dp),
-                            )
-                            Text(
-                                text = formatDateDisplay(task.timestampMillis),
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        // Time
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(Res.drawable.clock),
-                                contentDescription = "Clock",
-                                modifier = Modifier.size(20.dp),
-                            )
-                            Text(
-                                text = formatTimeDisplay(task.timestampMillis),
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
                     // Task Title
                     Text(
                         text = task.title,
@@ -316,32 +301,14 @@ class PreviewTaskScreen(
                         ) {
                             Text(
                                 text = "Sub-tasks list",
-                                fontSize = 16.sp,
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = primaryLiteColorVariant
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                             )
-
-                            // Progress indicator
-                            if (task.taskList.isNotEmpty()) {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Text(
-                                        text = "Progress: ${task.progressText}",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    LinearProgressIndicator(
-                                        progress = { task.progress },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                }
-                            }
 
                             task.taskList.forEach { taskItem ->
                                 TaskItemRow(
+                                    modifier = Modifier.padding(horizontal = 12.dp),
                                     taskItem = taskItem,
                                     onToggle = { isCompleted ->
                                         coroutineScope.launch {

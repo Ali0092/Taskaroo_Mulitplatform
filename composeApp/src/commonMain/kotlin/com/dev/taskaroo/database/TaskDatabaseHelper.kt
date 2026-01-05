@@ -39,7 +39,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 title = taskData.title,
                 subtitle = taskData.subtitle,
                 category = taskData.category,
-                completedTasksCount = taskData.completedTasks.toLong()
+                completedTasksCount = taskData.completedTasks.toLong(),
+                isTaskDone = if (taskData.isDone) 1L else 0L
             )
 
             // Insert task items
@@ -73,7 +74,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                         isCompleted = item.isCompleted == 1L
                     )
                 },
-                completedTasks = task.completedTasksCount.toInt()
+                completedTasks = task.completedTasksCount.toInt(),
+                isDone = task.isTaskDone == 1L
             )
         }
     }
@@ -98,7 +100,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                             isCompleted = item.isCompleted == 1L
                         )
                     },
-                    completedTasks = task.completedTasksCount.toInt()
+                    completedTasks = task.completedTasksCount.toInt(),
+                    isDone = task.isTaskDone == 1L
                 )
             }
         }
@@ -121,7 +124,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                     isCompleted = item.isCompleted == 1L
                 )
             },
-            completedTasks = task.completedTasksCount.toInt()
+            completedTasks = task.completedTasksCount.toInt(),
+            isDone = task.isTaskDone == 1L
         )
     }
 
@@ -168,6 +172,7 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 title = taskData.title,
                 subtitle = taskData.subtitle,
                 category = taskData.category,
+                isTaskDone = if (taskData.isDone) 1L else 0L,
                 timestampMillis = taskData.timestampMillis
             )
 
@@ -194,6 +199,17 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
     }
 
     /**
+     * Update task done status
+     */
+    suspend fun updateTaskDoneStatus(timestamp: Long, isDone: Boolean) =
+        withContext(Dispatchers.Default) {
+            taskQueries.updateTaskDoneStatus(
+                isTaskDone = if (isDone) 1L else 0L,
+                timestampMillis = timestamp
+            )
+        }
+
+    /**
      * Get all tasks as a Flow for reactive updates
      */
     fun getAllTasksFlow(): Flow<List<TaskData>> {
@@ -215,7 +231,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                                 isCompleted = item.isCompleted == 1L
                             )
                         },
-                        completedTasks = task.completedTasksCount.toInt()
+                        completedTasks = task.completedTasksCount.toInt(),
+                        isDone = task.isTaskDone == 1L
                     )
                 }
             }
