@@ -15,7 +15,8 @@ CREATE TABLE Task (
     title TEXT NOT NULL,
     subtitle TEXT NOT NULL,
     category TEXT NOT NULL,
-    completedTasksCount INTEGER NOT NULL DEFAULT 0
+    completedTasksCount INTEGER NOT NULL DEFAULT 0,
+    isTaskDone INTEGER NOT NULL DEFAULT 0
 );
 
 -- TaskItem table: Stores subtasks/checklist items for each task
@@ -29,8 +30,8 @@ CREATE TABLE TaskItem (
 
 -- Insert a new task
 insertTask:
-INSERT INTO Task(timestampMillis, title, subtitle, category, completedTasksCount)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO Task(timestampMillis, title, subtitle, category, completedTasksCount, isTaskDone)
+VALUES (?, ?, ?, ?, ?, ?);
 
 -- Get a specific task by timestamp
 getTaskByTimestamp:
@@ -59,8 +60,13 @@ updateTask:
 UPDATE Task SET
     title = ?,
     subtitle = ?,
-    category = ?
+    category = ?,
+    isTaskDone = ?
 WHERE timestampMillis = ?;
+
+-- Update task done status
+updateTaskDoneStatus:
+UPDATE Task SET isTaskDone = ? WHERE timestampMillis = ?;
 
 -- Insert a task item
 insertTaskItem:

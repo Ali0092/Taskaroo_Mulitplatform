@@ -101,7 +101,7 @@ class MainScreen : Screen {
         var showThemeDialog by remember { mutableStateOf(false) }
 
         // Filter state - persists during navigation session
-        var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }
+        var selectedFilter by rememberSaveable { mutableStateOf("Active") }
 
         // Track all tasks for chip visibility
         var allTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
@@ -130,14 +130,26 @@ class MainScreen : Screen {
             val currentTime = currentTimeMillis()
 
             tasks = when (selectedFilter) {
+                "All" -> {
+                    allTasks.sortedBy { it.timestampMillis }
+                }
+
+                "Active" -> {
+                    allTasks
+                        .filter { !it.isDone }
+                        .sortedBy { it.timestampMillis }
+                }
+
+                "Completed" -> {
+                    allTasks
+                        .filter { it.isDone }
+                        .sortedBy { it.timestampMillis }
+                }
+
                 "Upcoming" -> {
                     allTasks
                         .filter { it.timestampMillis >= currentTime }
-                        .sortedBy { it.timestampMillis }  // Closest deadline first
-                }
-
-                "All" -> {
-                    allTasks.sortedBy { it.timestampMillis }  // Oldest first
+                        .sortedBy { it.timestampMillis }
                 }
 
                 else -> allTasks.sortedBy { it.timestampMillis }
@@ -178,7 +190,7 @@ class MainScreen : Screen {
                 // Show filter chips only when there are tasks
                 if (allTasks.isNotEmpty()) {
                     TaskChipRow(
-                        categories = listOf("Upcoming", "All"),
+                        categories = listOf("Active", "All", "Completed", "Upcoming"),
                         onCategorySelected = { filter ->
                             selectedFilter = filter
                         }
@@ -230,6 +242,23 @@ class MainScreen : Screen {
                         items(tasks, key = { it.timestampMillis }) { task ->
                             TaskCard(
                                 taskData = task,
+                                onTaskDoneToggle = { isDone ->
+                                    coroutineScope.launch {
+                                        try {
+                                            databaseHelper.updateTaskDoneStatus(task.timestampMillis, isDone)
+
+                                            allTasks = allTasks.map { currentTask ->
+                                                if (currentTask.timestampMillis == task.timestampMillis) {
+                                                    currentTask.copy(isDone = isDone)
+                                                } else {
+                                                    currentTask
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            println("MainScreen: Error toggling task done status - ${e.message}")
+                                        }
+                                    }
+                                },
                                 onTaskItemToggle = { taskItemId, isChecked ->
                                     // Update task item completion in database
                                     coroutineScope.launch {
