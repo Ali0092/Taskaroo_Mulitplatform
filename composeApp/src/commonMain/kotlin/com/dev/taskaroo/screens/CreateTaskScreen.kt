@@ -608,7 +608,7 @@ class CreateTaskScreen(
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Done
                         ),
-                        maxLines = 10,
+                        maxLines = 15,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
@@ -689,6 +689,7 @@ class CreateTaskScreen(
                                             unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                                             cursorColor = MaterialTheme.colorScheme.onBackground
                                         ),
+                                        maxLines = 2,
                                         shape = RoundedCornerShape(8.dp),
                                         singleLine = true
                                     )

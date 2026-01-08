@@ -67,10 +67,9 @@ import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
 import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
+import com.dev.taskaroo.utils.formatDateDisplay
+import com.dev.taskaroo.utils.formatTimeDisplay
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.calendar
@@ -122,35 +121,6 @@ class PreviewTaskScreen(
                 isLoading = false
                 navigator.pop() // Go back if task not found
             }
-        }
-
-        // Date and time formatting functions
-        fun formatDateDisplay(timestamp: Long): String {
-            val instant = Instant.fromEpochMilliseconds(timestamp)
-            val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            val monthNames = listOf(
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-            )
-            val monthName = monthNames.getOrNull(dateTime.monthNumber - 1) ?: dateTime.monthNumber.toString()
-            return "$monthName ${dateTime.dayOfMonth}, ${dateTime.year}"
-        }
-
-        fun formatTimeDisplay(timestamp: Long): String {
-            val instant = Instant.fromEpochMilliseconds(timestamp)
-            val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            val hour24 = dateTime.hour
-            val minute = dateTime.minute
-
-            // Convert to 12-hour format
-            val (hour12, amPm) = when {
-                hour24 == 0 -> Pair(12, "AM")
-                hour24 < 12 -> Pair(hour24, "AM")
-                hour24 == 12 -> Pair(12, "PM")
-                else -> Pair(hour24 - 12, "PM")
-            }
-
-            return "${hour12.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} $amPm"
         }
 
         Scaffold { innerPadding ->
@@ -205,7 +175,7 @@ class PreviewTaskScreen(
                     )
 
                     // Priority Badge
-                    val (priorityColor, priorityBackground) = when (task.category.lowercase()) {
+                    val (priorityColor) = when (task.category.lowercase()) {
                         "urgent" -> urgentPriorityColor to urgentPriorityBackground
                         "high" -> highPriorityColor to highPriorityBackground
                         "medium" -> mediumPriorityColor to mediumPriorityBackground
@@ -224,7 +194,8 @@ class PreviewTaskScreen(
                             .padding(vertical = 16.dp, horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    )
+                    {
                         // Date
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -236,7 +207,7 @@ class PreviewTaskScreen(
                                 modifier = Modifier.size(20.dp),
                             )
                             Text(
-                                text = formatDateDisplay(task.timestampMillis),
+                                text = task.timestampMillis.formatDateDisplay(),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -254,7 +225,7 @@ class PreviewTaskScreen(
                                 modifier = Modifier.size(20.dp),
                             )
                             Text(
-                                text = formatTimeDisplay(task.timestampMillis),
+                                text = task.timestampMillis.formatTimeDisplay(),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -272,7 +243,8 @@ class PreviewTaskScreen(
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
+                        )
+                        {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -318,8 +290,7 @@ class PreviewTaskScreen(
                     // Task Items Checklist
                     if (task.taskList.isNotEmpty()) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
@@ -333,6 +304,7 @@ class PreviewTaskScreen(
                                 TaskItemRow(
                                     modifier = Modifier.padding(horizontal = 12.dp),
                                     taskItem = taskItem,
+                                    maxLines = 20,
                                     onToggle = { isCompleted ->
                                         coroutineScope.launch {
                                             databaseHelper.toggleTaskItemCompletion(taskItem.id, isCompleted)

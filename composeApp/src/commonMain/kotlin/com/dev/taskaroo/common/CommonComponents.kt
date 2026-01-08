@@ -400,6 +400,7 @@ fun TaskCardConcise(
                     taskData.taskList.take(2).forEach { taskItem ->
                         TaskItemRow(
                             taskItem = taskItem,
+                            maxLines = 2,
                             isConciseItem = true,
                             onToggle = { isChecked ->
                                 onTaskItemToggle(taskItem.id, isChecked)
@@ -459,7 +460,7 @@ fun TaskCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(start = 16.dp, end = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
@@ -624,6 +625,7 @@ fun TaskCard(
                         taskData.taskList.take(2).forEach { taskItem ->
                             TaskItemRow(
                                 taskItem = taskItem,
+                                maxLines = 2,
                                 onToggle = { isChecked ->
                                     onTaskItemToggle(taskItem.id, isChecked)
                                 }
@@ -754,7 +756,7 @@ fun TaskStatusBadge(
         status
     }
 
-    val shape = if (fullWidth) RoundedCornerShape(12.dp) else RoundedCornerShape(8.dp)
+    val shape = if (fullWidth) RoundedCornerShape(12.dp) else CircleShape
 
     val (statusColor, statusBackground) = when (displayStatus) {
         TaskStatus.COMPLETED -> completedStatusColor to completedStatusBackground
@@ -778,7 +780,7 @@ fun TaskStatusBadge(
                 )
                 .clip(shape)
                 .clickable { showDialog = true }
-                .padding(horizontal = if (fullWidth) 16.dp else 6.dp, vertical = if (fullWidth) 12.dp else 4.dp)
+                .padding(horizontal = if (fullWidth) 16.dp else 8.dp, vertical = if (fullWidth) 12.dp else 4.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1036,6 +1038,7 @@ fun CapsuleFloatingActionButton(
 fun TaskItemRow(
     modifier: Modifier = Modifier,
     taskItem: TaskItem,
+    maxLines: Int,
     isConciseItem: Boolean = false,
     onToggle: (Boolean) -> Unit
 ) {
@@ -1062,7 +1065,7 @@ fun TaskItemRow(
             fontWeight = FontWeight.Medium,
             color = if (isChecked) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onBackground,
             textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
-            maxLines = 1,
+            maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
