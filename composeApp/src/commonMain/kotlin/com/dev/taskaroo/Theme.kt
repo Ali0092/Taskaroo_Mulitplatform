@@ -122,22 +122,11 @@ private val lightColorScheme = lightColorScheme(
 
 @Composable
 fun TaskarooAppTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    themeMode: ThemeMode = ThemeMode.LIGHT,
     content: @Composable () -> Unit
 ) {
-    val systemInDarkTheme = isSystemInDarkTheme()
-
-    val darkTheme = when (themeMode) {
-        ThemeMode.DARK -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.SYSTEM -> systemInDarkTheme
-    }
-
-    val colorScheme = when {
-        // Use our custom Gen Z color schemes
-        darkTheme -> darkColorScheme
-        else -> lightColorScheme
-    }
+    val darkTheme = themeMode == ThemeMode.DARK
+    val colorScheme = if (darkTheme) darkColorScheme else lightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,

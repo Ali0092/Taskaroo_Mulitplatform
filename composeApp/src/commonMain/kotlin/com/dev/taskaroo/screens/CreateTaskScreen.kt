@@ -593,7 +593,7 @@ class CreateTaskScreen(
                         onValueChange = { taskDescription = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(100.dp),
+                            .height(200.dp),
                         placeholder = {
                             Text(
                                 text = "Enter task description",
@@ -623,7 +623,7 @@ class CreateTaskScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Task Details",
+                            text = "Tasks List",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onBackground

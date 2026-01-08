@@ -2,10 +2,9 @@ package com.dev.taskaroo.preferences
 
 enum class ThemeMode(val displayName: String) {
     LIGHT("Light"),
-    DARK("Dark"),
-    SYSTEM("System default")
+    DARK("Dark")
 }
 
 data class AppSettings(
-    val themeMode: ThemeMode = ThemeMode.SYSTEM
+    val themeMode: ThemeMode = ThemeMode.LIGHT
 )

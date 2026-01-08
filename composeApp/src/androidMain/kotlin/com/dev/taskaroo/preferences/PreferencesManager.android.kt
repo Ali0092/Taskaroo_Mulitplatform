@@ -32,7 +32,6 @@ class AndroidPreferencesManager private constructor(
     }
 
     private val _settingsFlow = MutableStateFlow(getCurrentSettingsSync())
-    private var themeChangeCallback: ((ThemeMode) -> Unit)? = null
 
     override val settingsFlow: StateFlow<AppSettings> = _settingsFlow
 
@@ -42,7 +41,6 @@ class AndroidPreferencesManager private constructor(
             .apply()
 
         _settingsFlow.value = _settingsFlow.value.copy(themeMode = themeMode)
-        themeChangeCallback?.invoke(themeMode)
     }
 
     override suspend fun getCurrentSettings(): AppSettings {
@@ -50,15 +48,15 @@ class AndroidPreferencesManager private constructor(
     }
 
     override fun onThemeChanged(callback: (ThemeMode) -> Unit) {
-        themeChangeCallback = callback
+        // No-op: callback mechanism removed in favor of StateFlow
     }
 
     fun getCurrentSettingsSync(): AppSettings {
-        val themeModeString = sharedPreferences.getString("theme_mode", ThemeMode.SYSTEM.name)
+        val themeModeString = sharedPreferences.getString("theme_mode", ThemeMode.LIGHT.name)
         val themeMode = try {
-            ThemeMode.valueOf(themeModeString ?: ThemeMode.SYSTEM.name)
+            ThemeMode.valueOf(themeModeString ?: ThemeMode.LIGHT.name)
         } catch (e: IllegalArgumentException) {
-            ThemeMode.SYSTEM
+            ThemeMode.LIGHT
         }
 
         return AppSettings(themeMode = themeMode)

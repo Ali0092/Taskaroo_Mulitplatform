@@ -34,11 +34,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dev.taskaroo.completedStatusColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -202,18 +204,18 @@ fun RowScope.ContentItem(
         modifier = Modifier
             .weight(1f)
             .padding(4.dp)
-            .background(MaterialTheme.colorScheme.background,shape)
+            .background(if (date.isSelected) completedStatusColor.copy(alpha = 0.4f) else MaterialTheme.colorScheme.background,shape)
             .clip(shape)
             .border(
                 if (date.isSelected) 2.dp else 1.dp,
-                if (date.isSelected) primaryColorVariant else primaryLiteColorVariant,
+                if (date.isSelected) completedStatusColor else primaryLiteColorVariant,
                 shape
             )
             .clickable { onClickListener(date) }
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = primary))
+        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (date.isSelected) MaterialTheme.colorScheme.onBackground else primary))
         Spacer(Modifier.height(8.dp))
         Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground))
     }

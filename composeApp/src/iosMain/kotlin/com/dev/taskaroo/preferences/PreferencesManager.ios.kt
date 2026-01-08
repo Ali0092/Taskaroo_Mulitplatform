@@ -10,7 +10,6 @@ class IosPreferencesManager : PreferencesManager {
 
     private val userDefaults = NSUserDefaults.standardUserDefaults
     private var _currentTheme = getCurrentThemeSync()
-    private var themeChangeCallback: ((ThemeMode) -> Unit)? = null
     private val _settingsFlow = MutableStateFlow(AppSettings(_currentTheme))
 
     override val settingsFlow: StateFlow<AppSettings> = _settingsFlow
@@ -22,21 +21,13 @@ class IosPreferencesManager : PreferencesManager {
         userDefaults.setObject(themeMode.name, "theme_mode")
         userDefaults.synchronize()
 
-        // Update local theme immediately
+        // Update local theme
         _currentTheme = themeMode
 
-        // Create new AppSettings and update StateFlow
-        val newSettings = AppSettings(themeMode)
-        _settingsFlow.value = newSettings
+        // Update StateFlow - single clean update
+        _settingsFlow.value = AppSettings(themeMode)
 
-        // Force multiple updates to trigger recomposition
-        _settingsFlow.value = newSettings.copy()
-        _settingsFlow.value = newSettings
-
-        // Call the callback for immediate UI update
-        themeChangeCallback?.invoke(themeMode)
-
-        println("iOS: Theme update complete, current flow value: ${_settingsFlow.value.themeMode}")
+        println("iOS: Theme updated successfully")
     }
 
     override suspend fun getCurrentSettings(): AppSettings {
@@ -44,16 +35,15 @@ class IosPreferencesManager : PreferencesManager {
     }
 
     override fun onThemeChanged(callback: (ThemeMode) -> Unit) {
-        themeChangeCallback = callback
-        println("iOS: Theme change callback registered")
+        // No-op: callback mechanism removed in favor of StateFlow
     }
 
     private fun getCurrentThemeSync(): ThemeMode {
         val themeModeString = userDefaults.stringForKey("theme_mode")
         return try {
-            ThemeMode.valueOf(themeModeString ?: ThemeMode.SYSTEM.name)
+            ThemeMode.valueOf(themeModeString ?: ThemeMode.LIGHT.name)
         } catch (e: IllegalArgumentException) {
-            ThemeMode.SYSTEM
+            ThemeMode.LIGHT
         }
     }
 }

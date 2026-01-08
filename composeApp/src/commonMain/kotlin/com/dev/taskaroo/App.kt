@@ -53,43 +53,15 @@ import taskaroo.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
 fun App() {
-
     val preferencesManager = remember { getPreferencesManager() }
-    var currentTheme by remember { mutableStateOf(ThemeMode.SYSTEM) }
-
-    // Initial theme setup
-    LaunchedEffect(Unit) {
-        val initialSettings = preferencesManager.getCurrentSettings()
-        currentTheme = initialSettings.themeMode
-        preferencesManager.onThemeChanged { newTheme ->
-            println("DictionaryApp: Theme change callback received: $newTheme")
-            currentTheme = newTheme
-        }
-    }
-
-    // Also observe StateFlow as backup
     val settings by preferencesManager.settingsFlow.collectAsState(AppSettings())
-    LaunchedEffect(settings.themeMode) {
-        if (settings.themeMode != currentTheme) {
-            println("DictionaryApp: StateFlow theme changed to ${settings.themeMode}")
-            currentTheme = settings.themeMode
-        }
-    }
 
-    // Calculate effective dark theme state for system bars
-    val systemInDarkTheme = isSystemInDarkTheme()
-    val darkTheme = when (currentTheme) {
-        ThemeMode.DARK -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.SYSTEM -> systemInDarkTheme
-    }
+    val darkTheme = settings.themeMode == ThemeMode.DARK
 
     // Update system bars based on theme (Android only)
     SetupSystemBars(darkTheme = darkTheme)
 
-    TaskarooAppTheme(
-        themeMode = currentTheme
-    ) {
+    TaskarooAppTheme(themeMode = settings.themeMode) {
         ProvideDatabaseHelper {
             Navigator(screen = MainScreen())
         }
