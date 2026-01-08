@@ -34,6 +34,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -55,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +76,13 @@ import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
+import com.dev.taskaroo.completedStatusBackground
+import com.dev.taskaroo.completedStatusColor
+import com.dev.taskaroo.overdueStatusBackground
+import com.dev.taskaroo.overdueStatusColor
+import com.dev.taskaroo.undoneStatusBackground
+import com.dev.taskaroo.undoneStatusColor
+import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
 import org.jetbrains.compose.resources.DrawableResource
@@ -360,7 +371,7 @@ fun TaskCardConcise(
                 modifier = Modifier.wrapContentWidth(),
                 text = taskData.title,
                 fontSize = 14.sp,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onBackground
@@ -430,7 +441,7 @@ fun TaskCard(
             .fillMaxWidth()
             .padding(top = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .alpha(if (taskData.isDone) 0.5f else 1f)
+            .alpha(if (taskData.isDone) 0.85f else 1f)
             .combinedClickable(
                 onClick = { onClick() },
                 onLongClick = { onLongClick() }
@@ -453,8 +464,8 @@ fun TaskCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = taskData.title,
-                        fontSize = 20.sp,
-                        maxLines = 1,
+                        fontSize = 18.sp,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -473,10 +484,14 @@ fun TaskCard(
                     )
                 }
 
-                CircularCheckbox(
-                    checked = taskData.isDone,
-                    onCheckedChange = { onTaskDoneToggle(it) },
-                    modifier = Modifier.size(24.dp).padding(start = 8.dp)
+                TaskStatusBadge(
+                    status = taskData.isDone.toTaskStatus(),
+                    isOverdue = isTaskOverdue(taskData.timestampMillis),
+                    onStatusChange = { newStatus ->
+                        onTaskDoneToggle(newStatus.toBoolean())
+                    },
+                    modifier = Modifier.padding(start = 8.dp),
+                    fullWidth = false
                 )
             }
 
@@ -672,6 +687,299 @@ fun CircularCheckbox(
                 tint = Color.White,
                 modifier = Modifier.size(14.dp)
             )
+        }
+    }
+}
+
+/**
+ * Task Status enum representing the completion status of a task
+ *
+ * @property displayName The user-facing display name for the status
+ * @property isCompleted Whether this status represents a completed task
+ */
+enum class TaskStatus(val displayName: String, val isCompleted: Boolean) {
+    /** Task is not yet completed */
+    UNDONE("Undone", false),
+    /** Task has been completed */
+    COMPLETED("Done", true),
+    /** Task is undone and past its deadline */
+    OVERDUE("Overdue", false)
+}
+
+/**
+ * Extension function to convert Boolean to TaskStatus
+ */
+fun Boolean.toTaskStatus() = if (this) TaskStatus.COMPLETED else TaskStatus.UNDONE
+
+/**
+ * Extension function to convert TaskStatus to Boolean
+ */
+fun TaskStatus.toBoolean() = this.isCompleted
+
+/**
+ * Task status badge with color-coded visual feedback and dropdown menu for status changes.
+ * Displays task completion status with automatic overdue detection.
+ *
+ * Visual Design:
+ * - Rounded corners (8dp)
+ * - Colored background and text based on status
+ * - Icon indicator (check circle for completed, radio button for undone)
+ * - Optional dropdown arrow for full-width variant
+ *
+ * @param status Current task status (UNDONE, COMPLETED, or OVERDUE)
+ * @param isOverdue Whether the task deadline has passed
+ * @param onStatusChange Callback invoked when user changes the status
+ * @param modifier Modifier to apply to the badge container
+ * @param fullWidth If true, badge expands to full width and shows dropdown arrow
+ */
+@Composable
+fun TaskStatusBadge(
+    status: TaskStatus,
+    isOverdue: Boolean,
+    onStatusChange: (TaskStatus) -> Unit,
+    modifier: Modifier = Modifier,
+    fullWidth: Boolean = false
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Determine display status and colors
+    val displayStatus = if (!status.isCompleted && isOverdue) {
+        TaskStatus.OVERDUE
+    } else {
+        status
+    }
+
+    val shape = if (fullWidth) RoundedCornerShape(12.dp) else RoundedCornerShape(8.dp)
+
+    val (statusColor, statusBackground) = when (displayStatus) {
+        TaskStatus.COMPLETED -> completedStatusColor to completedStatusBackground
+        TaskStatus.OVERDUE -> overdueStatusColor to overdueStatusBackground
+        TaskStatus.UNDONE -> undoneStatusColor to undoneStatusBackground
+    }
+
+    Box(modifier = modifier) {
+        // Status Badge
+        Box(
+            modifier = Modifier
+                .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
+                .background(
+                    color = statusBackground,
+                    shape = shape
+                )
+                .border(
+                    width = 1.dp,
+                    color = statusColor.copy(alpha = 0.3f),
+                    shape = shape
+                )
+                .clip(shape)
+                .clickable { showDialog = true }
+                .padding(horizontal = if (fullWidth) 16.dp else 6.dp, vertical = if(fullWidth) 12.dp else 4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Status indicator icon
+                Icon(
+                    imageVector = if (status.isCompleted) {
+                        Icons.Default.CheckCircle
+                    } else {
+                        Icons.Default.RadioButtonUnchecked
+                    },
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(if (fullWidth) 24.dp else 16.dp)
+                )
+
+                // Status text
+                Text(
+                    text = displayStatus.displayName,
+                    fontSize = if (fullWidth) 16.sp else 12.sp,
+                    fontWeight =  if (fullWidth) FontWeight.Bold else FontWeight.Medium,
+                    color = statusColor
+                )
+
+                if (fullWidth) {
+                    Spacer(Modifier.weight(1f))
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Change status",
+                        tint = statusColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // Status Selection Dialog
+        TaskStatusDialog(
+            showDialog = showDialog,
+            currentStatus = status,
+            onStatusSelected = { newStatus ->
+                onStatusChange(newStatus)
+            },
+            onDismiss = { showDialog = false }
+        )
+    }
+}
+
+/**
+ * Dialog for selecting task completion status.
+ * Provides a visual selection interface matching the app's theme.
+ * Shows all three status options: Undone, Done, and Overdue.
+ * User selects a status and confirms with OK button.
+ *
+ * @param showDialog Whether to display the dialog
+ * @param currentStatus Current task status
+ * @param onStatusSelected Callback when OK is pressed with selected status
+ * @param onDismiss Callback when dialog is dismissed or cancelled
+ */
+@Composable
+fun TaskStatusDialog(
+    showDialog: Boolean,
+    currentStatus: TaskStatus,
+    onStatusSelected: (TaskStatus) -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (showDialog) {
+        var selectedStatus by remember { mutableStateOf(currentStatus) }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Change Status",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Select task status:",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+
+                    // Undone Status Option
+                    StatusOptionCard(
+                        icon = Icons.Default.RadioButtonUnchecked,
+                        statusText = "Undone",
+                        statusColor = undoneStatusColor,
+                        statusBackground = undoneStatusBackground,
+                        isSelected = selectedStatus == TaskStatus.UNDONE,
+                        onClick = { selectedStatus = TaskStatus.UNDONE }
+                    )
+
+                    // Done Status Option
+                    StatusOptionCard(
+                        icon = Icons.Default.CheckCircle,
+                        statusText = "Done",
+                        statusColor = completedStatusColor,
+                        statusBackground = completedStatusBackground,
+                        isSelected = selectedStatus == TaskStatus.COMPLETED,
+                        onClick = { selectedStatus = TaskStatus.COMPLETED }
+                    )
+
+                    // Overdue Status Option
+                    StatusOptionCard(
+                        icon = Icons.Default.RadioButtonUnchecked,
+                        statusText = "Overdue",
+                        statusColor = overdueStatusColor,
+                        statusBackground = overdueStatusBackground,
+                        isSelected = selectedStatus == TaskStatus.OVERDUE,
+                        onClick = { selectedStatus = TaskStatus.OVERDUE }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onStatusSelected(selectedStatus)
+                        onDismiss()
+                    }
+                ) {
+                    Text("OK", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+}
+
+/**
+ * Individual status option card for TaskStatusDialog.
+ * Shows a check mark when selected for visual feedback.
+ *
+ * @param icon The icon to display for this status
+ * @param statusText The text label for this status
+ * @param statusColor The color for text and icons
+ * @param statusBackground The background color for the card
+ * @param isSelected Whether this option is currently selected
+ * @param onClick Callback when the card is clicked
+ */
+@Composable
+private fun StatusOptionCard(
+    icon: ImageVector,
+    statusText: String,
+    statusColor: Color,
+    statusBackground: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = statusBackground
+        ),
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = statusColor.copy(alpha = if (isSelected) 0.8f else 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = statusColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = statusText,
+                fontSize = 16.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = statusColor,
+                modifier = Modifier.weight(1f)
+            )
+
+            // Show check mark when selected
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Selected",
+                    tint = statusColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }

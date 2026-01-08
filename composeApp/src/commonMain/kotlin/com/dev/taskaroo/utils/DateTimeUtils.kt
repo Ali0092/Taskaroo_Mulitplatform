@@ -13,7 +13,12 @@
  */
 package com.dev.taskaroo.utils
 
-import kotlinx.datetime.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 
 /**
@@ -104,5 +109,17 @@ object DateTimeUtils {
     fun formatDateTime(millis: Long): String {
         val dateTime = millisToLocalDateTime(millis)
         return "${dateTime.date} ${formatTime(millis)}"
+    }
+
+    /**
+     * Checks if a task is overdue based on its deadline timestamp.
+     * A task is considered overdue if its timestamp is in the past.
+     *
+     * @param taskTimestampMillis The task's deadline in milliseconds
+     * @return true if the task deadline has passed, false otherwise
+     */
+    fun isTaskOverdue(taskTimestampMillis: Long): Boolean {
+        val currentTimeMillis = currentTimeMillis()
+        return taskTimestampMillis < currentTimeMillis
     }
 }

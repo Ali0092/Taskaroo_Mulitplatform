@@ -74,6 +74,25 @@ val lowPriorityColor = Color(0xFF757575)
 /** Background color for low priority task chips */
 val lowPriorityBackground = Color(0xFFFAFAFA)
 
+/**
+ * Task Status colors for completion tracking
+ * Provides visual feedback for task completion status including overdue tasks
+ */
+/** Text/icon color for undone tasks (Gray) */
+val undoneStatusColor = Color(0xFF9E9E9E)
+/** Background color for undone status badge */
+val undoneStatusBackground = Color(0xFFF5F5F5)
+
+/** Text/icon color for completed tasks (Green) */
+val completedStatusColor = Color(0xFF4CAF50)
+/** Background color for completed status badge */
+val completedStatusBackground = Color(0xFFE8F5E9)
+
+/** Text/icon color for overdue tasks (Red) */
+val overdueStatusColor = Color(0xFFD32F2F)
+/** Background color for overdue status badge */
+val overdueStatusBackground = Color(0xFFFFEBEE)
+
 
 private val darkColorScheme = darkColorScheme(
     primary = primaryColorVariant,

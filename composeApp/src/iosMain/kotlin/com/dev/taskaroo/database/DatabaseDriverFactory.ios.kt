@@ -29,6 +29,19 @@ actual class DatabaseDriverFactory {
      * @return SqlDriver instance configured for iOS platform
      */
     actual fun createDriver(): SqlDriver {
-        return NativeSqliteDriver(TaskDatabase.Schema, "task.db")
+        val driver = NativeSqliteDriver(TaskDatabase.Schema, "task.db")
+
+        // Migration: Add isTaskDone column if it doesn't exist
+        // This handles databases created before the column was added
+        try {
+            driver.executeQuery(null, "SELECT isTaskDone FROM Task LIMIT 1", { cursor ->
+                cursor.next()
+            }, 0)
+        } catch (_: Exception) {
+            // Column doesn't exist, add it
+            driver.execute(null, "ALTER TABLE Task ADD COLUMN isTaskDone INTEGER NOT NULL DEFAULT 0", 0)
+        }
+
+        return driver
     }
 }

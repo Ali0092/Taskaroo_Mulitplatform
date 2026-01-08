@@ -31,6 +31,24 @@ actual class DatabaseDriverFactory(private val context: Context) {
      * @return SqlDriver instance configured for Android platform
      */
     actual fun createDriver(): SqlDriver {
-        return AndroidSqliteDriver(TaskDatabase.Schema, context, "task.db")
+        return AndroidSqliteDriver(
+            schema = TaskDatabase.Schema,
+            context = context,
+            name = "task.db",
+            callback = object : AndroidSqliteDriver.Callback(TaskDatabase.Schema) {
+                override fun onOpen(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    // Check if isTaskDone column exists, if not add it
+                    try {
+                        db.query("SELECT isTaskDone FROM Task LIMIT 1").use { cursor ->
+                            cursor.moveToFirst()
+                        }
+                    } catch (_: Exception) {
+                        // Column doesn't exist, add it
+                        db.execSQL("ALTER TABLE Task ADD COLUMN isTaskDone INTEGER NOT NULL DEFAULT 0")
+                    }
+                }
+            }
+        )
     }
 }

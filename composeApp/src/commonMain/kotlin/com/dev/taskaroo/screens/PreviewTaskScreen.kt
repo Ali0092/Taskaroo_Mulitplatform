@@ -52,7 +52,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskItemRow
+import com.dev.taskaroo.common.TaskStatusBadge
 import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.common.toBoolean
+import com.dev.taskaroo.common.toTaskStatus
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.highPriorityBackground
 import com.dev.taskaroo.highPriorityColor
@@ -63,6 +66,7 @@ import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
+import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -180,6 +184,26 @@ class PreviewTaskScreen(
 
                 // Display task information if loaded
                 taskData?.let { task ->
+                    // Status Section
+                    TaskStatusBadge(
+                        modifier = Modifier.fillMaxWidth(),
+                        status = task.isDone.toTaskStatus(),
+                        isOverdue = isTaskOverdue(task.timestampMillis),
+                        onStatusChange = { newStatus ->
+                            val isDone = newStatus.toBoolean()
+                            coroutineScope.launch {
+                                try {
+                                    databaseHelper.updateTaskDoneStatus(task.timestampMillis, isDone)
+                                    // Update local state
+                                    taskData = task.copy(isDone = isDone)
+                                } catch (e: Exception) {
+                                    println("Error updating task status: ${e.message}")
+                                }
+                            }
+                        },
+                        fullWidth = true
+                    )
+
                     // Priority Badge
                     val (priorityColor, priorityBackground) = when (task.category.lowercase()) {
                         "urgent" -> urgentPriorityColor to urgentPriorityBackground
@@ -188,7 +212,6 @@ class PreviewTaskScreen(
                         "low" -> lowPriorityColor to lowPriorityBackground
                         else -> Color.Gray to Color.LightGray
                     }
-
 
                     // Deadline Section
                     Row(
