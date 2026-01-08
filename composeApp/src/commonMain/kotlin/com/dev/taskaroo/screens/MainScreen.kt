@@ -101,7 +101,7 @@ class MainScreen : Screen {
         var showThemeDialog by remember { mutableStateOf(false) }
 
         // Filter state - persists during navigation session
-        var selectedFilter by rememberSaveable { mutableStateOf("Active") }
+        var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }
 
         // Track all tasks for chip visibility
         var allTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
@@ -190,7 +190,7 @@ class MainScreen : Screen {
                 // Show filter chips only when there are tasks
                 if (allTasks.isNotEmpty()) {
                     TaskChipRow(
-                        categories = listOf("Active", "All", "Completed", "Upcoming"),
+                        categories = listOf( "Upcoming", "Active", "Completed", "All"),
                         onCategorySelected = { filter ->
                             selectedFilter = filter
                         }

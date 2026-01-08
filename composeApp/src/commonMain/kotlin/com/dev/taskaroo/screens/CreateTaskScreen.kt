@@ -608,6 +608,7 @@ class CreateTaskScreen(
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Done
                         ),
+                        maxLines = 10,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }

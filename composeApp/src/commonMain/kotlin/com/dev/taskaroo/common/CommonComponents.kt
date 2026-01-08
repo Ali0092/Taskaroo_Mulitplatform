@@ -54,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
@@ -64,7 +65,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.alpha
+import com.dev.taskaroo.completedStatusBackground
+import com.dev.taskaroo.completedStatusColor
 import com.dev.taskaroo.highPriorityBackground
 import com.dev.taskaroo.highPriorityColor
 import com.dev.taskaroo.lowPriorityBackground
@@ -73,18 +75,16 @@ import com.dev.taskaroo.mediumPriorityBackground
 import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
+import com.dev.taskaroo.overdueStatusBackground
+import com.dev.taskaroo.overdueStatusColor
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
-import com.dev.taskaroo.completedStatusBackground
-import com.dev.taskaroo.completedStatusColor
-import com.dev.taskaroo.overdueStatusBackground
-import com.dev.taskaroo.overdueStatusColor
 import com.dev.taskaroo.undoneStatusBackground
 import com.dev.taskaroo.undoneStatusColor
-import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
+import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
@@ -377,16 +377,18 @@ fun TaskCardConcise(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            // Subtitle
-            Text(
-                modifier = Modifier.wrapContentWidth(),
-                text = taskData.subtitle,
-                fontSize = 12.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
+            if (taskData.subtitle.isNotEmpty()) {
+                // Subtitle
+                Text(
+                    modifier = Modifier.wrapContentWidth(),
+                    text = taskData.subtitle,
+                    fontSize = 12.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
 
             // Task Details Section
             if (taskData.taskList.isNotEmpty()) {
@@ -409,7 +411,7 @@ fun TaskCardConcise(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Due: "+taskData.deadline,
+                text = "Due: " + taskData.deadline,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
                 color = primaryColorVariant
@@ -473,15 +475,16 @@ fun TaskCard(
                     )
 
                     Spacer(Modifier.height(4.dp))
-
-                    Text(
-                        text = taskData.subtitle,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    if (taskData.subtitle.isNotEmpty()) {
+                        Text(
+                            text = taskData.subtitle,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
                 TaskStatusBadge(
@@ -700,8 +703,10 @@ fun CircularCheckbox(
 enum class TaskStatus(val displayName: String, val isCompleted: Boolean) {
     /** Task is not yet completed */
     UNDONE("Undone", false),
+
     /** Task has been completed */
     COMPLETED("Done", true),
+
     /** Task is undone and past its deadline */
     OVERDUE("Overdue", false)
 }
@@ -773,7 +778,7 @@ fun TaskStatusBadge(
                 )
                 .clip(shape)
                 .clickable { showDialog = true }
-                .padding(horizontal = if (fullWidth) 16.dp else 6.dp, vertical = if(fullWidth) 12.dp else 4.dp)
+                .padding(horizontal = if (fullWidth) 16.dp else 6.dp, vertical = if (fullWidth) 12.dp else 4.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -795,7 +800,7 @@ fun TaskStatusBadge(
                 Text(
                     text = displayStatus.displayName,
                     fontSize = if (fullWidth) 16.sp else 12.sp,
-                    fontWeight =  if (fullWidth) FontWeight.Bold else FontWeight.Medium,
+                    fontWeight = if (fullWidth) FontWeight.Bold else FontWeight.Medium,
                     color = statusColor
                 )
 
@@ -999,7 +1004,7 @@ fun CapsuleFloatingActionButton(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.BottomEnd
     ) {
-        Row (
+        Row(
             modifier = Modifier
                 .clip(CircleShape)
                 .border(BorderStroke(width = 1.dp, color = primaryColorVariant.copy(alpha = 0.5f)), shape = CircleShape)
