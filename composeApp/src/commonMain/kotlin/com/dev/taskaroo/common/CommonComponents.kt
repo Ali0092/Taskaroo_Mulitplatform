@@ -415,7 +415,7 @@ fun TaskCardConcise(
                 text = "Due: " + taskData.deadline,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
-                color = primaryColorVariant
+                color = completedStatusColor
             )
 
         }
