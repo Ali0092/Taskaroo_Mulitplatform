@@ -15,9 +15,20 @@ A modern, cross-platform task management application built with Kotlin Multiplat
 - **Local Database**: SQLDelight-powered local persistence for fast, offline-first task management
 - **Modern UI**: Clean Material Design 3 interface with custom theming
 
-## Demo
+## Screenshots (Both Android & iOS)
+### HomeScreen & Calendar
+----
+<img width="22%" height="1500" alt="main_screen_dark" src="https://github.com/user-attachments/assets/789d9c34-808d-4856-8e35-16dabb77e837" />
+<img width="22%" height="1500" alt="main_screen_lite" src="https://github.com/user-attachments/assets/10ce552e-06db-4eea-8b45-e2acefa5e6e3" />
+<img width="22%" height="1500" alt="calendar_screen _lite" src="https://github.com/user-attachments/assets/e8475f80-4736-44ab-9204-0aa3449ef854" />
+<img width="22%" height="1500" alt="calendar_screen_lite" src="https://github.com/user-attachments/assets/f8ad1048-d330-486b-8cd1-5226e5bbb6e6" />
 
-https://github.com/user-attachments/assets/c02b874a-bb53-491f-8a1c-a070e1bcbe85
+### Task Details Screen, Date Picker & Status changinig
+----
+<img width="22%" height="1500" alt="task_details_scr_lite" src="https://github.com/user-attachments/assets/e8b75819-7395-429e-b476-b1933fa6855c" />
+<img width="22%" height="1500" alt="task_details_scr_dark" src="https://github.com/user-attachments/assets/e4c01420-6765-4234-962b-12daafc6ae17" />
+<img width="22%" height="1500" alt="native_date_time_pickers" src="https://github.com/user-attachments/assets/0c86d948-8f25-4880-9f0e-12931316672f" />
+<img width="22%" height="1500" alt="priority_changes" src="https://github.com/user-attachments/assets/a860f5dd-03ad-418e-a698-53f423fe1466" />
 
 ## Technology Stack
 
@@ -28,29 +39,6 @@ Taskaroo leverages modern mobile development technologies:
 - **[SQLDelight](https://cashapp.github.io/sqldelight/)**: Type-safe SQL database with Kotlin extensions
 - **[Voyager](https://voyager.adriel.cafe/)**: Multiplatform navigation library
 - **[kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)**: Multiplatform date and time library
-
-## Architecture
-
-Taskaroo follows a clean architecture pattern with clear separation of concerns:
-
-### Project Structure
-
-```
-Taskaroo/
-├── composeApp/              # Main application module
-│   ├── commonMain/          # Shared code for all platforms
-│   │   ├── kotlin/
-│   │   │   ├── common/      # Reusable UI components
-│   │   │   ├── database/    # SQLDelight database layer
-│   │   │   ├── modal/       # Data models
-│   │   │   ├── screens/     # Screen composables
-│   │   │   └── utils/       # Utility functions
-│   │   ├── composeResources/ # Images and resources
-│   │   └── sqldelight/      # Database schemas
-│   ├── androidMain/         # Android-specific code
-│   └── iosMain/             # iOS-specific code
-└── iosApp/                  # iOS application wrapper
-```
 
 ### Architecture Highlights
 
