@@ -40,7 +40,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 subtitle = taskData.subtitle,
                 category = taskData.category,
                 completedTasksCount = taskData.completedTasks.toLong(),
-                isTaskDone = if (taskData.isDone) 1L else 0L
+                isTaskDone = if (taskData.isDone) 1L else 0L,
+                isMeeting = if (taskData.isMeeting) 1L else 0L
             )
 
             // Insert task items
@@ -75,7 +76,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                     )
                 },
                 completedTasks = task.completedTasksCount.toInt(),
-                isDone = task.isTaskDone == 1L
+                isDone = task.isTaskDone == 1L,
+                isMeeting = task.isMeeting == 1L
             )
         }
     }
@@ -101,7 +103,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                         )
                     },
                     completedTasks = task.completedTasksCount.toInt(),
-                    isDone = task.isTaskDone == 1L
+                    isDone = task.isTaskDone == 1L,
+                    isMeeting = task.isMeeting == 1L
                 )
             }
         }
@@ -125,7 +128,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 )
             },
             completedTasks = task.completedTasksCount.toInt(),
-            isDone = task.isTaskDone == 1L
+            isDone = task.isTaskDone == 1L,
+            isMeeting = task.isMeeting == 1L
         )
     }
 
@@ -173,6 +177,7 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 subtitle = taskData.subtitle,
                 category = taskData.category,
                 isTaskDone = if (taskData.isDone) 1L else 0L,
+                isMeeting = if (taskData.isMeeting) 1L else 0L,
                 timestampMillis = taskData.timestampMillis
             )
 
@@ -232,9 +237,36 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                             )
                         },
                         completedTasks = task.completedTasksCount.toInt(),
-                        isDone = task.isTaskDone == 1L
+                        isDone = task.isTaskDone == 1L,
+                        isMeeting = task.isMeeting == 1L
                     )
                 }
             }
+    }
+
+    /**
+     * Get all meeting tasks from the database
+     */
+    suspend fun getMeetingTasks(): List<TaskData> = withContext(Dispatchers.Default) {
+        val tasks = taskQueries.getMeetingTasks().executeAsList()
+        tasks.map { task ->
+            val taskItems = taskQueries.getTaskItemsForTask(task.timestampMillis).executeAsList()
+            TaskData(
+                timestampMillis = task.timestampMillis,
+                title = task.title,
+                subtitle = task.subtitle,
+                category = task.category,
+                taskList = taskItems.map { item ->
+                    TaskItem(
+                        id = item.id,
+                        text = item.text,
+                        isCompleted = item.isCompleted == 1L
+                    )
+                },
+                completedTasks = task.completedTasksCount.toInt(),
+                isDone = task.isTaskDone == 1L,
+                isMeeting = task.isMeeting == 1L
+            )
+        }
     }
 }

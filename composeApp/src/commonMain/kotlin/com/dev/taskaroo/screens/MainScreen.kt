@@ -52,6 +52,7 @@ import com.dev.taskaroo.common.TaskChipRow
 import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
+import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
@@ -89,6 +90,7 @@ class MainScreen : Screen {
 
         val preferencesManager = remember { getPreferencesManager() }
         val settings by preferencesManager.settingsFlow.collectAsState(AppSettings())
+        val notificationScheduler = rememberNotificationScheduler()
 
         // Filter state - persists during navigation session
         var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }
@@ -142,6 +144,12 @@ class MainScreen : Screen {
                         .sortedBy { it.timestampMillis }
                 }
 
+                "Meeting" -> {
+                    allTasks
+                        .filter { it.isMeeting }
+                        .sortedBy { it.timestampMillis }
+                }
+
                 else -> allTasks.sortedBy { it.timestampMillis }
             }
 
@@ -187,7 +195,7 @@ class MainScreen : Screen {
                 // Show filter chips only when there are tasks
                 if (allTasks.isNotEmpty()) {
                     TaskChipRow(
-                        categories = listOf( "Upcoming", "Active", "Completed", "All"),
+                        categories = listOf("Upcoming", "Active", "Completed", "Meeting", "All"),
                         onCategorySelected = { filter ->
                             selectedFilter = filter
                         }
@@ -243,6 +251,11 @@ class MainScreen : Screen {
                                     coroutineScope.launch {
                                         try {
                                             databaseHelper.updateTaskDoneStatus(task.timestampMillis, isDone)
+
+                                            // Cancel notification if task marked done and is a meeting
+                                            if (isDone && task.isMeeting) {
+                                                notificationScheduler.cancelNotification(task.timestampMillis)
+                                            }
 
                                             allTasks = allTasks.map { currentTask ->
                                                 if (currentTask.timestampMillis == task.timestampMillis) {

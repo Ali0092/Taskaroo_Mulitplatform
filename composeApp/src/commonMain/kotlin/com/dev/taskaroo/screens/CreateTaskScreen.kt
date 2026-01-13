@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -63,6 +64,7 @@ import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
+import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
@@ -146,6 +148,7 @@ class CreateTaskScreen(
         var selectedHour by remember { mutableStateOf(12) }     // 1-12
         var selectedMinute by remember { mutableStateOf(0) }    // 0-59
         var selectedAmPm by remember { mutableStateOf("PM") }   // "AM" or "PM"
+        var isMeetingTask by remember { mutableStateOf(false) } // Meeting toggle
 
         // Picker dialog states
         var showDatePicker by remember { mutableStateOf(false) }
@@ -155,6 +158,7 @@ class CreateTaskScreen(
         var taskDetailItems by remember { mutableStateOf(listOf("")) }
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
+        val notificationScheduler = rememberNotificationScheduler()
 
         // Error handling and loading state
         var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -205,6 +209,7 @@ class CreateTaskScreen(
                 taskTitle = task.title
                 taskDescription = task.subtitle
                 selectedPriority = task.category
+                isMeetingTask = task.isMeeting
 
                 // Extract date and time from timestamp
                 val instant = Instant.fromEpochMilliseconds(task.timestampMillis)
@@ -355,7 +360,8 @@ class CreateTaskScreen(
                                             subtitle = taskDescription,
                                             category = selectedPriority,
                                             taskList = taskItems,
-                                            completedTasks = completedCount
+                                            completedTasks = completedCount,
+                                            isMeeting = isMeetingTask
                                         )
 
                                         println("${if (isEditMode) "EditTask" else "CreateTask"}: About to ${if (isEditMode) "update" else "insert"} task: ${taskData.title}")
@@ -367,6 +373,26 @@ class CreateTaskScreen(
                                         } else {
                                             databaseHelper.insertTask(taskData)
                                             println("CreateTask: Task inserted successfully!")
+                                        }
+
+                                        // Handle notification scheduling for meetings
+                                        try {
+                                            // Always cancel existing notification
+                                            notificationScheduler.cancelNotification(taskData.timestampMillis)
+
+                                            // Reschedule if meeting and not done
+                                            if (isMeetingTask && !taskData.isDone) {
+                                                // Request notification permission before scheduling
+                                                val hasPermission = notificationScheduler.requestPermission()
+                                                if (hasPermission) {
+                                                    notificationScheduler.scheduleMeetingNotification(taskData)
+                                                    println("CreateTask: Meeting notification scheduled with permission granted")
+                                                } else {
+                                                    println("CreateTask: Notification permission denied, meeting scheduled without notification")
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            println("CreateTask: Error scheduling notification - ${e.message}")
                                         }
 
                                         // Navigate back only on success
@@ -416,6 +442,29 @@ class CreateTaskScreen(
                             color = Color(0xFFC62828), // Dark red text
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // Meeting Toggle
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Meeting?",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        Switch(
+                            checked = isMeetingTask,
+                            onCheckedChange = { isMeetingTask = it }
                         )
                     }
                 }

@@ -64,6 +64,7 @@ import com.dev.taskaroo.lowPriorityColor
 import com.dev.taskaroo.mediumPriorityBackground
 import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
+import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.urgentPriorityBackground
 import com.dev.taskaroo.urgentPriorityColor
 import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
@@ -105,6 +106,7 @@ class PreviewTaskScreen(
         val databaseHelper = LocalDatabase.current
         val coroutineScope = rememberCoroutineScope()
         val scrollState = rememberScrollState()
+        val notificationScheduler = rememberNotificationScheduler()
 
         var taskData by remember { mutableStateOf<TaskData?>(null) }
         var showDeleteDialog by remember { mutableStateOf(false) }
@@ -164,6 +166,12 @@ class PreviewTaskScreen(
                             coroutineScope.launch {
                                 try {
                                     databaseHelper.updateTaskDoneStatus(task.timestampMillis, isDone)
+
+                                    // Cancel notification if task marked done and is a meeting
+                                    if (isDone && task.isMeeting) {
+                                        notificationScheduler.cancelNotification(task.timestampMillis)
+                                    }
+
                                     // Update local state
                                     taskData = task.copy(isDone = isDone)
                                 } catch (e: Exception) {

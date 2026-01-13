@@ -46,7 +46,8 @@ data class TaskData(
     val category: String, // "urgent", "medium", "high", "low"
     val taskList: List<TaskItem>,
     var completedTasks: Int = 0,
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    val isMeeting: Boolean = false
 ) {
     /**
      * Computed deadline string formatted for display.

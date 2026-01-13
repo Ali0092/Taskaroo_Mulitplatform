@@ -19,6 +19,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -284,6 +286,7 @@ fun DotIndicator(
 
 /**
  * Horizontal row of selectable category chips with pill-shaped design
+ * Scrollable horizontally when content exceeds available width
  *
  * @param categories List of category names to display
  * @param onCategorySelected Callback invoked when a category is selected
@@ -294,10 +297,12 @@ fun TaskChipRow(
     onCategorySelected: (String) -> Unit = {}
 ) {
     var selectedCategory by remember { mutableStateOf(categories.first()) }
+    val scrollState = rememberScrollState()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .horizontalScroll(scrollState)
             .background(
                 color = primaryLiteColorVariant.copy(alpha = 0.15f),
                 shape = CircleShape
