@@ -47,7 +47,8 @@ data class TaskData(
     val taskList: List<TaskItem>,
     var completedTasks: Int = 0,
     val isDone: Boolean = false,
-    val isMeeting: Boolean = false
+    val isMeeting: Boolean = false,
+    val meetingLink: String = ""
 ) {
     /**
      * Computed deadline string formatted for display.

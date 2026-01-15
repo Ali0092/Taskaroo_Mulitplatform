@@ -20,7 +20,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,12 +31,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -60,6 +61,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -306,8 +308,9 @@ fun TaskChipRow(
             .background(
                 color = primaryLiteColorVariant.copy(alpha = 0.15f),
                 shape = CircleShape
-            ),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            )
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         categories.forEach { category ->
@@ -315,7 +318,6 @@ fun TaskChipRow(
 
             Box(
                 modifier = Modifier
-                    .weight(1f)
                     .height(36.dp)
                     .background(
                         color = if (isSelected) Color.White else Color.Transparent,
@@ -329,11 +331,19 @@ fun TaskChipRow(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = category,
-                    color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row(
+                    modifier = Modifier
+                        .height(36.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = category,
+                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
@@ -481,7 +491,44 @@ fun TaskCard(
                     )
 
                     Spacer(Modifier.height(4.dp))
-                    if (taskData.subtitle.isNotEmpty()) {
+                    // Show meeting link if exists, otherwise show description
+                    if (taskData.isMeeting && taskData.meetingLink.isNotEmpty()) {
+                        // Show clickable meeting link
+                        val uriHandler = LocalUriHandler.current
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    try {
+                                        uriHandler.openUri(taskData.meetingLink)
+                                    } catch (e: Exception) {
+                                        // Handle invalid URL gracefully
+                                    }
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Link,
+                                contentDescription = "Meeting link",
+                                tint = Color(0xFF0066CC),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = taskData.meetingLink,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = Color(0xFF0066CC),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        }
+                    } else if (taskData.subtitle.isNotEmpty()) {
+                        // Show description only if no meeting link
                         Text(
                             text = taskData.subtitle,
                             fontSize = 14.sp,

@@ -58,14 +58,21 @@ class IOSNotificationScheduler : NotificationScheduler {
         dispatch_async(dispatch_get_main_queue()) {
             try {
                 // Create notification content with title and message
+                val bodyText = if (task.meetingLink.isNotEmpty()) {
+                    "${task.subtitle}\n\nMeeting Link: ${task.meetingLink}"
+                } else {
+                    task.subtitle
+                }
+
                 val content = UNMutableNotificationContent().apply {
                     setTitle("Meeting: ${task.title} starts in 15 minutes")
-                    setBody(task.subtitle)
+                    setBody(bodyText)
                     setSound(UNNotificationSound.defaultSound())
 
                     // Add taskTimestamp to userInfo for deep linking when user taps notification
                     setUserInfo(mapOf(
-                        "taskTimestamp" to task.timestampMillis.toString()
+                        "taskTimestamp" to task.timestampMillis.toString(),
+                        "meetingLink" to task.meetingLink
                     ))
                 }
 

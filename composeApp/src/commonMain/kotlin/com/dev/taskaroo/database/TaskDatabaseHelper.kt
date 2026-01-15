@@ -41,7 +41,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 category = taskData.category,
                 completedTasksCount = taskData.completedTasks.toLong(),
                 isTaskDone = if (taskData.isDone) 1L else 0L,
-                isMeeting = if (taskData.isMeeting) 1L else 0L
+                isMeeting = if (taskData.isMeeting) 1L else 0L,
+                meetingLink = taskData.meetingLink
             )
 
             // Insert task items
@@ -77,7 +78,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 },
                 completedTasks = task.completedTasksCount.toInt(),
                 isDone = task.isTaskDone == 1L,
-                isMeeting = task.isMeeting == 1L
+                isMeeting = task.isMeeting == 1L,
+                meetingLink = task.meetingLink
             )
         }
     }
@@ -104,7 +106,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                     },
                     completedTasks = task.completedTasksCount.toInt(),
                     isDone = task.isTaskDone == 1L,
-                    isMeeting = task.isMeeting == 1L
+                    isMeeting = task.isMeeting == 1L,
+                    meetingLink = task.meetingLink
                 )
             }
         }
@@ -129,7 +132,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
             },
             completedTasks = task.completedTasksCount.toInt(),
             isDone = task.isTaskDone == 1L,
-            isMeeting = task.isMeeting == 1L
+            isMeeting = task.isMeeting == 1L,
+            meetingLink = task.meetingLink
         )
     }
 
@@ -178,6 +182,7 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 category = taskData.category,
                 isTaskDone = if (taskData.isDone) 1L else 0L,
                 isMeeting = if (taskData.isMeeting) 1L else 0L,
+                meetingLink = taskData.meetingLink,
                 timestampMillis = taskData.timestampMillis
             )
 
@@ -238,7 +243,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                         },
                         completedTasks = task.completedTasksCount.toInt(),
                         isDone = task.isTaskDone == 1L,
-                        isMeeting = task.isMeeting == 1L
+                        isMeeting = task.isMeeting == 1L,
+                        meetingLink = task.meetingLink
                     )
                 }
             }
@@ -265,7 +271,8 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 },
                 completedTasks = task.completedTasksCount.toInt(),
                 isDone = task.isTaskDone == 1L,
-                isMeeting = task.isMeeting == 1L
+                isMeeting = task.isMeeting == 1L,
+                meetingLink = task.meetingLink
             )
         }
     }

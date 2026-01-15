@@ -88,6 +88,7 @@ class AndroidNotificationScheduler(
                 putExtra("taskTimestamp", task.timestampMillis)
                 putExtra("taskTitle", task.title)
                 putExtra("taskSubtitle", task.subtitle)
+                putExtra("task_meeting_link", task.meetingLink)
             }
 
             // Use timestamp as unique request code for PendingIntent
@@ -202,6 +203,7 @@ class MeetingNotificationReceiver : BroadcastReceiver() {
         val taskTimestamp = intent.getLongExtra("taskTimestamp", 0L)
         val taskTitle = intent.getStringExtra("taskTitle") ?: "Meeting"
         val taskSubtitle = intent.getStringExtra("taskSubtitle") ?: ""
+        val taskMeetingLink = intent.getStringExtra("task_meeting_link") ?: ""
 
         println("MeetingNotificationReceiver: Received notification for '$taskTitle'")
 
@@ -220,10 +222,17 @@ class MeetingNotificationReceiver : BroadcastReceiver() {
         )
 
         // Build notification with user-friendly message
+        val notificationText = if (taskMeetingLink.isNotEmpty()) {
+            "$taskSubtitle\n\nMeeting Link: $taskMeetingLink"
+        } else {
+            taskSubtitle
+        }
+
         val notification = NotificationCompat.Builder(context, AndroidNotificationScheduler.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Meeting: $taskTitle starts in 15 minutes")
-            .setContentText(taskSubtitle)
+            .setContentText(notificationText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(notificationText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

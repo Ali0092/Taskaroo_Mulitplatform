@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -149,6 +150,7 @@ class CreateTaskScreen(
         var selectedMinute by remember { mutableStateOf(0) }    // 0-59
         var selectedAmPm by remember { mutableStateOf("PM") }   // "AM" or "PM"
         var isMeetingTask by remember { mutableStateOf(false) } // Meeting toggle
+        var meetingLink by remember { mutableStateOf("") }       // Meeting link field
 
         // Picker dialog states
         var showDatePicker by remember { mutableStateOf(false) }
@@ -210,6 +212,7 @@ class CreateTaskScreen(
                 taskDescription = task.subtitle
                 selectedPriority = task.category
                 isMeetingTask = task.isMeeting
+                meetingLink = task.meetingLink
 
                 // Extract date and time from timestamp
                 val instant = Instant.fromEpochMilliseconds(task.timestampMillis)
@@ -361,7 +364,8 @@ class CreateTaskScreen(
                                             category = selectedPriority,
                                             taskList = taskItems,
                                             completedTasks = completedCount,
-                                            isMeeting = isMeetingTask
+                                            isMeeting = isMeetingTask,
+                                            meetingLink = if (isMeetingTask) meetingLink.trim() else ""
                                         )
 
                                         println("${if (isEditMode) "EditTask" else "CreateTask"}: About to ${if (isEditMode) "update" else "insert"} task: ${taskData.title}")
@@ -624,6 +628,43 @@ class CreateTaskScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
+                }
+
+                // Meeting Link (only show if isMeeting is true)
+                if (isMeetingTask) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Meeting Link (Optional)",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        OutlinedTextField(
+                            value = meetingLink,
+                            onValueChange = { meetingLink = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    text = "Enter meeting link (e.g., Zoom, Google Meet)",
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                                cursorColor = MaterialTheme.colorScheme.onBackground
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Uri,
+                                imeAction = ImeAction.Next
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                    }
                 }
 
                 // Task Description
