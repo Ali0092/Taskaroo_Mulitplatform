@@ -33,10 +33,19 @@ interface NotificationScheduler {
     suspend fun cancelNotification(taskTimestamp: Long)
 
     /**
+     * Check if notification permission is currently granted.
+     * Does not show any permission dialog - only checks current status.
+     *
+     * @return true if permission is granted or not needed, false if denied
+     */
+    suspend fun checkPermissionStatus(): Boolean
+
+    /**
      * Request user permission for sending notifications.
      * On Android 13+, requests POST_NOTIFICATIONS permission.
      * On iOS, requests user notification authorization.
      * On older Android versions, returns true (no permission needed).
+     * Should only be called if checkPermissionStatus() returns false.
      *
      * @return true if permission is granted or not needed, false if denied
      */

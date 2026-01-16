@@ -156,30 +156,42 @@ class AndroidNotificationScheduler(
     }
 
     /**
-     * Check and request POST_NOTIFICATIONS permission on Android 13+.
+     * Check if POST_NOTIFICATIONS permission is granted on Android 13+.
      * On older versions, the permission is not required.
-     * Note: This only checks the current permission state. Actual permission
-     * request UI should be handled by the Activity.
+     * Does not show any permission dialog - only checks current status.
      */
-    override suspend fun requestPermission(): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun checkPermissionStatus(): Boolean = withContext(Dispatchers.IO) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val hasPermission = ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
 
-            if (!hasPermission) {
-                println("AndroidNotificationScheduler: POST_NOTIFICATIONS permission NOT granted")
-                println("AndroidNotificationScheduler: User needs to grant notification permission in Settings or via system dialog")
-            } else {
-                println("AndroidNotificationScheduler: POST_NOTIFICATIONS permission IS granted")
-            }
+            println("AndroidNotificationScheduler: Permission status - granted = $hasPermission")
             hasPermission
         } else {
             // Permission not required on older Android versions (pre-Android 13)
             println("AndroidNotificationScheduler: Running on Android < 13, permission not required")
             true
         }
+    }
+
+    /**
+     * Check POST_NOTIFICATIONS permission on Android 13+.
+     * Note: On Android, this method can only CHECK permission status.
+     * To actually REQUEST permission from the user, the Activity must use
+     * ActivityCompat.requestPermissions() or rememberLauncherForActivityResult in Compose.
+     * On older Android versions, the permission is not required and returns true.
+     */
+    override suspend fun requestPermission(): Boolean = withContext(Dispatchers.IO) {
+        val hasPermission = checkPermissionStatus()
+
+        if (!hasPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            println("AndroidNotificationScheduler: POST_NOTIFICATIONS permission NOT granted")
+            println("AndroidNotificationScheduler: Permission must be requested from Activity/Composable")
+        }
+
+        hasPermission
     }
 
     /**

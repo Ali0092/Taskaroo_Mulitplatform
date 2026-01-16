@@ -141,12 +141,58 @@ class IOSNotificationScheduler : NotificationScheduler {
     }
 
     /**
+     * Check current notification authorization status on iOS without requesting.
+     * Returns the current permission state without showing any dialog.
+     */
+    override suspend fun checkPermissionStatus(): Boolean {
+        var granted = false
+        var completed = false
+
+        dispatch_async(dispatch_get_main_queue()) {
+            try {
+                notificationCenter.getNotificationSettingsWithCompletionHandler { settings ->
+                    // Check if authorization status is authorized
+                    granted = settings?.authorizationStatus == 2L  // UNAuthorizationStatusAuthorized = 2
+                    completed = true
+                    println("IOSNotificationScheduler: Permission status checked - granted = $granted")
+                }
+            } catch (e: Exception) {
+                println("IOSNotificationScheduler: Exception checking permission - ${e.message}")
+                granted = false
+                completed = true
+            }
+        }
+
+        // Wait for status check (with timeout of 3 seconds)
+        var waitCount = 0
+        while (!completed && waitCount < 30) {
+            delay(100)
+            waitCount++
+        }
+
+        if (!completed) {
+            println("IOSNotificationScheduler: Permission check timeout, assuming not granted")
+            granted = false
+        }
+
+        return granted
+    }
+
+    /**
      * Request user notification authorization on iOS.
      * Prompts the user to allow notifications with alert, sound, and badge options.
      * User can change this later in Settings > App > Notifications.
      * This is a blocking call that requests permission synchronously.
+     * Only shows the dialog if permission has not been previously requested.
      */
     override suspend fun requestPermission(): Boolean {
+        // First check if we already have permission
+        val hasPermission = checkPermissionStatus()
+        if (hasPermission) {
+            println("IOSNotificationScheduler: Permission already granted, skipping request")
+            return true
+        }
+
         // iOS permission requests are asynchronous
         // Request authorization with alert, sound, and badge
         var granted = false
@@ -167,7 +213,7 @@ class IOSNotificationScheduler : NotificationScheduler {
                 }
             } catch (e: Exception) {
                 println("IOSNotificationScheduler: Exception requesting permission - ${e.message}")
-                granted = true  // Allow to continue even if permission request fails
+                granted = false
                 completed = true
             }
         }
@@ -180,8 +226,8 @@ class IOSNotificationScheduler : NotificationScheduler {
         }
 
         if (!completed) {
-            println("IOSNotificationScheduler: Permission request timeout, assuming granted")
-            granted = true
+            println("IOSNotificationScheduler: Permission request timeout")
+            granted = false
         }
 
         return granted

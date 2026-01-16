@@ -13,14 +13,5 @@ package com.dev.taskaroo.utils
 
 import androidx.compose.runtime.Composable
 
-/**
- * Sets up system bar (status bar and navigation bar) appearance based on theme.
- *
- * This is an expect function with platform-specific implementations:
- * - Android: Uses enableEdgeToEdge with SystemBarStyle to set icon colors
- * - iOS: No-op as status bar styling is handled differently
- *
- * @param darkTheme Whether the app is currently in dark theme mode
- */
 @Composable
 expect fun SetupSystemBars(darkTheme: Boolean)

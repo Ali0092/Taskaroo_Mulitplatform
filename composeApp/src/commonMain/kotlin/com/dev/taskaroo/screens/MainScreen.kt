@@ -53,6 +53,7 @@ import com.dev.taskaroo.common.TopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.notifications.rememberNotificationScheduler
+import com.dev.taskaroo.notifications.rememberNotificationPermissionRequester
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
@@ -91,6 +92,26 @@ class MainScreen : Screen {
         val preferencesManager = remember { getPreferencesManager() }
         val settings by preferencesManager.settingsFlow.collectAsState(AppSettings())
         val notificationScheduler = rememberNotificationScheduler()
+
+        // Permission requester for notifications
+        val requestNotificationPermission = rememberNotificationPermissionRequester { isGranted ->
+            if (isGranted) {
+                println("MainScreen: Notification permission granted")
+            } else {
+                println("MainScreen: Notification permission denied")
+            }
+        }
+
+        // Request notification permission on first launch
+        LaunchedEffect(Unit) {
+            val hasPermission = notificationScheduler.checkPermissionStatus()
+            if (!hasPermission) {
+                println("MainScreen: Requesting notification permission on launch")
+                requestNotificationPermission()
+            } else {
+                println("MainScreen: Notification permission already granted")
+            }
+        }
 
         // Filter state - persists during navigation session
         var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }

@@ -61,9 +61,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,40 +101,39 @@ import taskaroo.composeapp.generated.resources.calendar
  * @param title The text to display as the app bar title
  * @param canShowNavigationIcon Whether to show the back navigation button
  * @param otherIcon Optional drawable resource for the primary action icon
- * @param secondIcon Optional drawable resource for the secondary action icon
+ * @param trailingIcon Optional drawable resource for the secondary action icon
  * @param onBackButtonClick Callback invoked when back button is clicked
- * @param onOtherIconClick Callback invoked when primary action icon is clicked
- * @param onSecondIconClick Callback invoked when secondary action icon is clicked
+ * @param onTrailingIconClick Callback invoked when primary action icon is clicked
+ * @param onOtherIconClick Callback invoked when secondary action icon is clicked
  */
 @Composable
 fun TopAppBar(
     title: String,
     canShowNavigationIcon: Boolean,
     otherIcon: DrawableResource? = null,
-    secondIcon: DrawableResource? = null,
+    trailingIcon: DrawableResource? = null,
     onBackButtonClick: () -> Unit = {},
-    onOtherIconClick: () -> Unit = {},
-    onSecondIconClick: () -> Unit = {}
+    onTrailingIconClick: () -> Unit = {},
+    onOtherIconClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (canShowNavigationIcon) {
-            IconButton(
-                onClick = {
-                    onBackButtonClick()
-                }
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.back_button),
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            Icon(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        onBackButtonClick()
+                    },
+                painter = painterResource(Res.drawable.back_button),
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
 
-        // Main title
         Text(
             modifier = Modifier.weight(1f),
             text = title,
@@ -143,26 +142,20 @@ fun TopAppBar(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        // Second icon (delete button)
-        if (secondIcon != null) {
-            Spacer(modifier = Modifier.width(12.dp))
-
-            IconSurface(
-                icon = secondIcon,
-                getAddButtonClick = {
-                    onSecondIconClick()
-                }
-            )
-        }
-
-        // Other icon
         if (otherIcon != null) {
-            Spacer(modifier = Modifier.width(12.dp))
-
             IconSurface(
                 icon = otherIcon,
                 getAddButtonClick = {
                     onOtherIconClick()
+                }
+            )
+        }
+
+        if (trailingIcon != null) {
+            IconSurface(
+                icon = trailingIcon,
+                getAddButtonClick = {
+                    onTrailingIconClick()
                 }
             )
         }
@@ -392,7 +385,41 @@ fun TaskCardConcise(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            if (taskData.subtitle.isNotEmpty()) {
+            // Show meeting link if exists, otherwise show description
+            if (taskData.isMeeting && taskData.meetingLink.isNotEmpty()) {
+                val uriHandler = LocalUriHandler.current
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable {
+                            try {
+                                uriHandler.openUri(taskData.meetingLink)
+                            } catch (e: Exception) {
+                                // Handle invalid URL gracefully
+                            }
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Link,
+                        contentDescription = "Meeting link",
+                        tint = Color(0xFF0066CC),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = taskData.meetingLink,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color(0xFF0066CC),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textDecoration = TextDecoration.Underline
+                    )
+                }
+            } else if (taskData.subtitle.isNotEmpty()) {
                 // Subtitle
                 Text(
                     modifier = Modifier.wrapContentWidth(),
@@ -479,66 +506,19 @@ fun TaskCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = taskData.title,
-                        fontSize = 18.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
-                    )
 
-                    Spacer(Modifier.height(4.dp))
-                    // Show meeting link if exists, otherwise show description
-                    if (taskData.isMeeting && taskData.meetingLink.isNotEmpty()) {
-                        // Show clickable meeting link
-                        val uriHandler = LocalUriHandler.current
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = taskData.title,
+                    fontSize = 18.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
+                )
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    try {
-                                        uriHandler.openUri(taskData.meetingLink)
-                                    } catch (e: Exception) {
-                                        // Handle invalid URL gracefully
-                                    }
-                                }
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Link,
-                                contentDescription = "Meeting link",
-                                tint = Color(0xFF0066CC),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = taskData.meetingLink,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color(0xFF0066CC),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        }
-                    } else if (taskData.subtitle.isNotEmpty()) {
-                        // Show description only if no meeting link
-                        Text(
-                            text = taskData.subtitle,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                Spacer(Modifier.height(12.dp))
 
                 TaskStatusBadge(
                     status = taskData.isDone.toTaskStatus(),
@@ -546,9 +526,60 @@ fun TaskCard(
                     onStatusChange = { newStatus ->
                         onTaskDoneToggle(newStatus.toBoolean())
                     },
-                    modifier = Modifier.padding(start = 8.dp),
                     fullWidth = false
                 )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+
+                // Show meeting link if exists, otherwise show description
+                if (taskData.isMeeting && taskData.meetingLink.isNotEmpty()) {
+                    // Show clickable meeting link
+                    val uriHandler = LocalUriHandler.current
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                try {
+                                    uriHandler.openUri(taskData.meetingLink)
+                                } catch (e: Exception) {
+                                    // Handle invalid URL gracefully
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Link,
+                            contentDescription = "Meeting link",
+                            tint = Color(0xFF0066CC),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = taskData.meetingLink,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xFF0066CC),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
+                } else if (taskData.subtitle.isNotEmpty()) {
+                    // Show description only if no meeting link
+                    Text(
+                        text = taskData.subtitle,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
             // Category and Deadline Row

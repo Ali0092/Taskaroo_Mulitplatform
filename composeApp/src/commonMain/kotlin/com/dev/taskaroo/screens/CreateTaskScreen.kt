@@ -162,6 +162,15 @@ class CreateTaskScreen(
         val coroutineScope = rememberCoroutineScope()
         val notificationScheduler = rememberNotificationScheduler()
 
+        // Check notification permission status (but don't request it here - that's done on MainScreen)
+        var hasNotificationPermission by remember { mutableStateOf(false) }
+
+        // Check permission status on screen load
+        LaunchedEffect(Unit) {
+            hasNotificationPermission = notificationScheduler.checkPermissionStatus()
+            println("CreateTask: Notification permission status = $hasNotificationPermission")
+        }
+
         // Error handling and loading state
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var isSaving by remember { mutableStateOf(false) }
@@ -386,13 +395,14 @@ class CreateTaskScreen(
 
                                             // Reschedule if meeting and not done
                                             if (isMeetingTask && !taskData.isDone) {
-                                                // Request notification permission before scheduling
-                                                val hasPermission = notificationScheduler.requestPermission()
+                                                // Permission was already requested when toggling meeting on
+                                                // Just check if we have it and schedule
+                                                val hasPermission = notificationScheduler.checkPermissionStatus()
                                                 if (hasPermission) {
                                                     notificationScheduler.scheduleMeetingNotification(taskData)
-                                                    println("CreateTask: Meeting notification scheduled with permission granted")
+                                                    println("CreateTask: Meeting notification scheduled")
                                                 } else {
-                                                    println("CreateTask: Notification permission denied, meeting scheduled without notification")
+                                                    println("CreateTask: No notification permission, meeting scheduled without notification")
                                                 }
                                             }
                                         } catch (e: Exception) {
@@ -468,7 +478,29 @@ class CreateTaskScreen(
 
                         Switch(
                             checked = isMeetingTask,
-                            onCheckedChange = { isMeetingTask = it }
+                            onCheckedChange = { enabled ->
+                                if (enabled) {
+                                    // When enabling meeting toggle, check if permission is granted
+                                    coroutineScope.launch {
+                                        val hasPermission = notificationScheduler.checkPermissionStatus()
+                                        if (hasPermission) {
+                                            // Have permission, enable the toggle
+                                            println("CreateTask: Permission granted, enabling meeting toggle")
+                                            isMeetingTask = true
+                                            hasNotificationPermission = true
+                                        } else {
+                                            // No permission, show warning and don't enable
+                                            println("CreateTask: Permission not granted, cannot enable meeting")
+                                            errorMessage = "Please enable notification permission in Settings to use meeting reminders"
+                                            isMeetingTask = false
+                                        }
+                                    }
+                                } else {
+                                    // Disabling meeting toggle
+                                    isMeetingTask = false
+                                    errorMessage = null // Clear any error messages
+                                }
+                            }
                         )
                     }
                 }

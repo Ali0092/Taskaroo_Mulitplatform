@@ -21,10 +21,6 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 
-/**
- * Utility object for date and time operations.
- * Functions are well-documented below with their specific purposes.
- */
 @OptIn(ExperimentalTime::class)
 object DateTimeUtils {
     /**
