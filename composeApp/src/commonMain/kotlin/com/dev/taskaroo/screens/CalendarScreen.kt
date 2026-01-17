@@ -49,57 +49,17 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.HorizontalCalendar
 import com.dev.taskaroo.common.TaskCardConcise
-import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.DateTimeUtils
+import com.dev.taskaroo.utils.Utils.hoursList
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.launch
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.add_icon
 
-val hoursList = listOf(
-    "12:00\nAM",  // Midnight (hour 0)
-    "01:00\nAM",  // hour 1
-    "02:00\nAM",  // hour 2
-    "03:00\nAM",  // hour 3
-    "04:00\nAM",  // hour 4
-    "05:00\nAM",  // hour 5
-    "06:00\nAM",  // hour 6
-    "07:00\nAM",  // hour 7
-    "08:00\nAM",  // hour 8
-    "09:00\nAM",  // hour 9
-    "10:00\nAM",  // hour 10
-    "11:00\nAM",  // hour 11
-    "12:00\nPM",  // Noon (hour 12)
-    "01:00\nPM",  // hour 13
-    "02:00\nPM",  // hour 14
-    "03:00\nPM",  // hour 15
-    "04:00\nPM",  // hour 16
-    "05:00\nPM",  // hour 17
-    "06:00\nPM",  // hour 18
-    "07:00\nPM",  // hour 19
-    "08:00\nPM",  // hour 20
-    "09:00\nPM",  // hour 21
-    "10:00\nPM",  // hour 22
-    "11:00\nPM",  // hour 23
-)
-
-/**
- * Calendar screen displaying tasks organized by date and hourly time slots.
- *
- * This screen provides:
- * - Interactive horizontal calendar for date selection
- * - Hourly time slot visualization (24-hour format)
- * - Tasks grouped and displayed within their respective time slots
- * - Task item completion toggling
- * - Navigation to task editing on tap
- * - Task deletion via long-press with confirmation dialog
- * - Automatic refresh of tasks when date changes
- *
- * Tasks are automatically sorted in ascending order within each hour slot.
- */
 class CalendarScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -147,7 +107,7 @@ class CalendarScreen : Screen {
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                TopAppBar(
+                TaskarooTopAppBar(
                     title = "Schedule",
                     canShowNavigationIcon = true,
                     otherIcon = Res.drawable.add_icon,

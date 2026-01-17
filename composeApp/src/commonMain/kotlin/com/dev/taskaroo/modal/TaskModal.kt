@@ -7,7 +7,6 @@
  */
 package com.dev.taskaroo.modal
 
-import com.dev.taskaroo.utils.DateTimeUtils
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime

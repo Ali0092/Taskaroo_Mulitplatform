@@ -11,10 +11,6 @@ package com.dev.taskaroo.notifications
 import androidx.compose.runtime.Composable
 import com.dev.taskaroo.modal.TaskData
 
-/**
- * Platform-agnostic interface for scheduling meeting notifications.
- * Implementations handle platform-specific notification APIs (AlarmManager on Android, UNUserNotificationCenter on iOS).
- */
 interface NotificationScheduler {
     /**
      * Schedule a notification 15 minutes before the task's due time.

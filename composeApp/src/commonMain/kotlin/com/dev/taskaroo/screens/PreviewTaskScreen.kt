@@ -60,8 +60,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskItemRow
-import com.dev.taskaroo.common.TaskStatusBadge
-import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.common.TaskarooStatusBadge
+import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.common.toBoolean
 import com.dev.taskaroo.common.toTaskStatus
 import com.dev.taskaroo.database.LocalDatabase
@@ -87,22 +87,7 @@ import taskaroo.composeapp.generated.resources.delete_icon
 import taskaroo.composeapp.generated.resources.edit_icon
 import kotlin.time.ExperimentalTime
 
-/**
- * Screen for previewing task details with edit and delete options.
- *
- * Provides a read-only view of task information including:
- * - Priority badge with colored indicator
- * - Deadline date and time
- * - Task title and description
- * - Task items checklist (interactive - can be toggled)
- * - Progress indicator showing completion percentage
- *
- * Top bar actions:
- * - Edit button: Navigate to CreateTaskScreen in edit mode
- * - Delete button: Show confirmation dialog, then delete task
- *
- * @property taskTimestampToEdit Timestamp of the task to preview
- */
+
 class PreviewTaskScreen(
     private val taskTimestampToEdit: Long
 ) : Screen {
@@ -144,11 +129,11 @@ class PreviewTaskScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Top App Bar with Edit and Delete buttons
-                TopAppBar(
+                TaskarooTopAppBar(
                     title = "Task Details",
                     canShowNavigationIcon = true,
                     otherIcon = Res.drawable.edit_icon,
-                    secondIcon = Res.drawable.delete_icon,
+                    trailingIcon = Res.drawable.delete_icon,
                     onBackButtonClick = {
                         navigator.pop()
                     },
@@ -156,7 +141,7 @@ class PreviewTaskScreen(
                         // Navigate to CreateTaskScreen in edit mode
                         navigator.push(CreateTaskScreen(taskTimestampToEdit = taskTimestampToEdit))
                     },
-                    onSecondIconClick = {
+                    onTrailingIconClick = {
                         // Show delete confirmation dialog
                         showDeleteDialog = true
                     }
@@ -165,7 +150,7 @@ class PreviewTaskScreen(
                 // Display task information if loaded
                 taskData?.let { task ->
                     // Status Section
-                    TaskStatusBadge(
+                    TaskarooStatusBadge(
                         modifier = Modifier.fillMaxWidth(),
                         status = task.isDone.toTaskStatus(),
                         isOverdue = isTaskOverdue(task.timestampMillis),
@@ -190,63 +175,6 @@ class PreviewTaskScreen(
                         fullWidth = true
                     )
 
-                    // Meeting Link (if task is meeting and has link)
-                    if (task.isMeeting && task.meetingLink.isNotEmpty()) {
-                        val uriHandler = LocalUriHandler.current
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp)
-                        ) {
-                            Text(
-                                text = "Meeting Link",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF0066CC).copy(alpha = 0.1f))
-                                    .clickable {
-                                        try {
-                                            uriHandler.openUri(task.meetingLink)
-                                        } catch (e: Exception) {
-                                            // Handle invalid URL gracefully
-                                        }
-                                    }
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Link,
-                                    contentDescription = "Meeting link",
-                                    tint = Color(0xFF0066CC),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = task.meetingLink,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    color = Color(0xFF0066CC),
-                                    modifier = Modifier.weight(1f),
-                                    textDecoration = TextDecoration.Underline
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.OpenInNew,
-                                    contentDescription = "Open link",
-                                    tint = Color(0xFF0066CC),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                    }
-
                     // Priority Badge
                     val (priorityColor) = when (task.category.lowercase()) {
                         "urgent" -> urgentPriorityColor to urgentPriorityBackground
@@ -267,8 +195,7 @@ class PreviewTaskScreen(
                             .padding(vertical = 16.dp, horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
+                    ) {
                         // Date
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -337,6 +264,48 @@ class PreviewTaskScreen(
                                     color = priorityColor
                                 )
                             }
+                        }
+                    }
+
+                    // Meeting Link (if task is meeting and has link)
+                    if (task.isMeeting && task.meetingLink.isNotEmpty()) {
+                        val uriHandler = LocalUriHandler.current
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF0066CC).copy(alpha = 0.1f))
+                                .clickable {
+                                    try {
+                                        uriHandler.openUri(task.meetingLink)
+                                    } catch (e: Exception) {
+                                        // Handle invalid URL gracefully
+                                    }
+                                }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Link,
+                                contentDescription = "Meeting link",
+                                tint = Color(0xFF0066CC),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = task.meetingLink,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = Color(0xFF0066CC),
+                                modifier = Modifier.weight(1f),
+                                textDecoration = TextDecoration.Underline
+                            )
+                            Icon(
+                                imageVector = Icons.Default.OpenInNew,
+                                contentDescription = "Open link",
+                                tint = Color(0xFF0066CC),
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
 

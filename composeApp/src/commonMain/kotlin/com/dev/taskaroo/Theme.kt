@@ -84,7 +84,7 @@ val undoneStatusColor = Color(0xFF9E9E9E)
 val undoneStatusBackground = Color(0xFFF5F5F5)
 
 /** Text/icon color for completed tasks (Green) */
-val completedStatusColor = Color(0xFF4CAF50)
+val completedStatusColor = Color(0xFF1C9521)
 /** Background color for completed status badge */
 val completedStatusBackground = Color(0xFFE8F5E9)
 

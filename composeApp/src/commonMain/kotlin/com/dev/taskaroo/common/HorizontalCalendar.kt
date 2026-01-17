@@ -54,14 +54,6 @@ import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.left_arrow
 import taskaroo.composeapp.generated.resources.right_arrow
 
-
-/**
- * Main horizontal calendar component displaying a week view with date selection
- *
- * @param modifier Modifier to apply to the calendar container
- * @param shape Shape for the date item containers
- * @param onDateClickListener Callback invoked when a date is selected
- */
 @Composable
 fun HorizontalCalendar(
     modifier: Modifier = Modifier,

@@ -16,13 +16,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -49,41 +47,26 @@ import com.dev.taskaroo.common.CapsuleFloatingActionButton
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow
-import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
-import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.notifications.rememberNotificationPermissionRequester
+import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
+import com.dev.taskaroo.utils.Utils
 import com.dev.taskaroo.utils.currentTimeMillis
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.no_data_placeholder
-import taskaroo.composeapp.generated.resources.settings_icon
 import taskaroo.composeapp.generated.resources.theme_icon
 
-/**
- * Main screen displaying task list with filtering and management capabilities.
- *
- * This screen provides a comprehensive task management interface that allows users to:
- * - View tasks filtered by "Upcoming" (future tasks) or "All" (all tasks)
- * - Toggle task item completion status with real-time database updates
- * - Navigate to task creation via floating action button
- * - Edit tasks by tapping on them
- * - Delete tasks via long-press with confirmation dialog
- * - See completion progress for each task
- *
- * The screen maintains filter state across navigation and automatically refreshes
- * task data when returning from other screens.
- */
 class MainScreen : Screen {
 
     @Composable
     override fun Content() {
-        // Sample task data with all priority levels
 
         val navigator = LocalNavigator.currentOrThrow
         val databaseHelper = LocalDatabase.current
@@ -106,7 +89,6 @@ class MainScreen : Screen {
         LaunchedEffect(Unit) {
             val hasPermission = notificationScheduler.checkPermissionStatus()
             if (!hasPermission) {
-                println("MainScreen: Requesting notification permission on launch")
                 requestNotificationPermission()
             } else {
                 println("MainScreen: Notification permission already granted")
@@ -174,7 +156,6 @@ class MainScreen : Screen {
                 else -> allTasks.sortedBy { it.timestampMillis }
             }
 
-            println("MainScreen: Filtered to ${tasks.size} tasks for filter '$selectedFilter'")
         }
 
         Scaffold(
@@ -195,8 +176,8 @@ class MainScreen : Screen {
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             ) {
 
-                TopAppBar(
-                    title = "Make every day count forward✨",
+                TaskarooTopAppBar(
+                    title = "From to-do to done✨",
                     canShowNavigationIcon = false,
                     otherIcon = Res.drawable.theme_icon,
                     onOtherIconClick = {
@@ -216,7 +197,7 @@ class MainScreen : Screen {
                 // Show filter chips only when there are tasks
                 if (allTasks.isNotEmpty()) {
                     TaskChipRow(
-                        categories = listOf("Upcoming", "Active", "Completed", "Meeting", "All"),
+                        categories = Utils.categoriesList,
                         onCategorySelected = { filter ->
                             selectedFilter = filter
                         }
@@ -253,7 +234,7 @@ class MainScreen : Screen {
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "No tasks! Tap the button at\nbottom right to create one.",
+                                text = "No tasks yet\nadd one to get started",
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                                 textAlign = TextAlign.Center
                             )
@@ -286,7 +267,7 @@ class MainScreen : Screen {
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            println("MainScreen: Error toggling task done status - ${e.message}")
+                                            e.printStackTrace()
                                         }
                                     }
                                 },
@@ -343,7 +324,7 @@ class MainScreen : Screen {
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            println("MainScreen: Error toggling task item - ${e.message}")
+                                            e.printStackTrace()
                                         }
                                     }
                                 },
@@ -385,7 +366,6 @@ class MainScreen : Screen {
                                     taskToDelete = null
                                 }
                             } catch (e: Exception) {
-                                println("MainScreen: Error deleting task - ${e.message}")
                                 showDeleteDialog = false
                                 taskToDelete = null
                             }

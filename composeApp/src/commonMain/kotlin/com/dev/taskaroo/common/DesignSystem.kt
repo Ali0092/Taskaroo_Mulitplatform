@@ -44,7 +44,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -107,7 +106,7 @@ import taskaroo.composeapp.generated.resources.calendar
  * @param onOtherIconClick Callback invoked when secondary action icon is clicked
  */
 @Composable
-fun TopAppBar(
+fun TaskarooTopAppBar(
     title: String,
     canShowNavigationIcon: Boolean,
     otherIcon: DrawableResource? = null,
@@ -143,7 +142,7 @@ fun TopAppBar(
         )
 
         if (otherIcon != null) {
-            IconSurface(
+            TaskarooRoundedIcon(
                 icon = otherIcon,
                 getAddButtonClick = {
                     onOtherIconClick()
@@ -152,7 +151,7 @@ fun TopAppBar(
         }
 
         if (trailingIcon != null) {
-            IconSurface(
+            TaskarooRoundedIcon(
                 icon = trailingIcon,
                 getAddButtonClick = {
                     onTrailingIconClick()
@@ -227,7 +226,7 @@ fun DeleteConfirmationDialog(
  * @param getAddButtonClick Callback invoked when the icon is clicked
  */
 @Composable
-fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
+fun TaskarooRoundedIcon(icon: DrawableResource, getAddButtonClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .clip(CircleShape)
@@ -245,35 +244,6 @@ fun IconSurface(icon: DrawableResource, getAddButtonClick: () -> Unit) {
                 painter = painterResource(icon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-    }
-}
-
-/**
- * Page indicator dots for carousel or pager components
- *
- * @param pageCount Total number of pages
- * @param currentPage Current active page index
- */
-@Composable
-fun DotIndicator(
-    pageCount: Int, currentPage: Int,
-) {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-    ) {
-        repeat(pageCount) { index ->
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(if (index == currentPage) primaryColorVariant else Color.Gray.copy(alpha = 0.5f))
             )
         }
     }
@@ -481,6 +451,9 @@ fun TaskCard(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
 ) {
+
+    val uriHandler = LocalUriHandler.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -513,14 +486,14 @@ fun TaskCard(
                     fontSize = 18.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onBackground,
                     textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
                 )
 
                 Spacer(Modifier.height(12.dp))
 
-                TaskStatusBadge(
+                TaskarooStatusBadge(
                     status = taskData.isDone.toTaskStatus(),
                     isOverdue = isTaskOverdue(taskData.timestampMillis),
                     onStatusChange = { newStatus ->
@@ -532,13 +505,11 @@ fun TaskCard(
 
             Spacer(Modifier.height(8.dp))
 
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 12.dp)) {
 
                 // Show meeting link if exists, otherwise show description
                 if (taskData.isMeeting && taskData.meetingLink.isNotEmpty()) {
                     // Show clickable meeting link
-                    val uriHandler = LocalUriHandler.current
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -556,14 +527,14 @@ fun TaskCard(
                         Icon(
                             imageVector = Icons.Default.Link,
                             contentDescription = "Meeting link",
-                            tint = Color(0xFF0066CC),
+                            tint = Color(0xFF0F7BE8),
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
                             text = taskData.meetingLink,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
-                            color = Color(0xFF0066CC),
+                            color = Color(0xFF0F7BE8),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             textDecoration = TextDecoration.Underline
@@ -676,12 +647,24 @@ fun TaskCard(
                         )
                         .padding(start = 16.dp, end = 16.dp, top = 12.dp)
                 ) {
-                    Text(
-                        text = "Task Details",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Task Details",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = taskData.progressText,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        )
+                    }
 
                     // Progress Indicator
                     LinearProgressIndicator(
@@ -690,14 +673,7 @@ fun TaskCard(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         color = primaryColorVariant,
-                        trackColor = primaryLiteColorVariant.copy(alpha = 0.3f)
-                    )
-
-                    Text(
-                        text = taskData.progressText,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        trackColor = MaterialTheme.colorScheme.surface
                     )
 
                     // Task Items
@@ -731,6 +707,7 @@ fun TaskCard(
 fun CircularCheckbox(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    uncheckColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -742,7 +719,7 @@ fun CircularCheckbox(
 
                 // Draw circle border
                 drawCircle(
-                    color = if (checked) primaryColorVariant else Color.Gray.copy(alpha = 0.5f),
+                    color = uncheckColor.copy(alpha = if (checked) 0.5f else 0.8f),
                     radius = radius,
                     style = if (checked) Stroke(width = strokeWidth.width) else strokeWidth
                 )
@@ -755,6 +732,7 @@ fun CircularCheckbox(
                     )
                 }
             }
+            .clip(CircleShape)
             .clickable { onCheckedChange(!checked) },
         contentAlignment = Alignment.Center
     ) {
@@ -823,7 +801,7 @@ fun TaskStatus.toBoolean() = this.isCompleted
  * @param fullWidth If true, badge expands to full width and shows dropdown arrow
  */
 @Composable
-fun TaskStatusBadge(
+fun TaskarooStatusBadge(
     status: TaskStatus,
     isOverdue: Boolean,
     onStatusChange: (TaskStatus) -> Unit,
@@ -841,10 +819,10 @@ fun TaskStatusBadge(
 
     val shape = if (fullWidth) RoundedCornerShape(12.dp) else CircleShape
 
-    val (statusColor, statusBackground) = when (displayStatus) {
-        TaskStatus.COMPLETED -> completedStatusColor to completedStatusBackground
-        TaskStatus.OVERDUE -> overdueStatusColor to overdueStatusBackground
-        TaskStatus.UNDONE -> undoneStatusColor to undoneStatusBackground
+    val statusColor = when (displayStatus) {
+        TaskStatus.COMPLETED -> completedStatusColor
+        TaskStatus.OVERDUE -> overdueStatusColor
+        TaskStatus.UNDONE -> undoneStatusColor
     }
 
     Box(modifier = modifier) {
@@ -853,12 +831,7 @@ fun TaskStatusBadge(
             modifier = Modifier
                 .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
                 .background(
-                    color = statusBackground,
-                    shape = shape
-                )
-                .border(
-                    width = 1.dp,
-                    color = statusColor.copy(alpha = 0.3f),
+                    color = if (fullWidth) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.background,
                     shape = shape
                 )
                 .clip(shape)
@@ -1092,19 +1065,19 @@ fun CapsuleFloatingActionButton(
         Row(
             modifier = Modifier
                 .clip(CircleShape)
-                .border(BorderStroke(width = 1.dp, color = primaryColorVariant.copy(alpha = 0.5f)), shape = CircleShape)
+                .border(BorderStroke(width = 1.dp, color = primaryColorVariant.copy(alpha = 0.8f)), shape = CircleShape)
                 .clickable {
                     onAddClick()
                 }
                 .background(primary)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(text = "Calendar", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 16.sp)
-            Spacer(modifier = Modifier.width(6.dp))
             Image(
                 painter = painterResource(Res.drawable.calendar),
                 contentDescription = "add_task",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
     }
@@ -1135,18 +1108,19 @@ fun TaskItemRow(
     ) {
         CircularCheckbox(
             checked = isChecked,
+            uncheckColor = MaterialTheme.colorScheme.onBackground,
             onCheckedChange = { checked ->
                 isChecked = checked
                 onToggle(checked)
             },
-            modifier = Modifier.size(if (isConciseItem) 13.dp else 20.dp)
+            modifier = Modifier.size(if (isConciseItem) 15.dp else 18.dp)
         )
 
         Text(
             text = taskItem.text,
             fontSize = if (isConciseItem) 13.sp else 16.sp,
             fontWeight = FontWeight.Medium,
-            color = if (isChecked) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = if (isChecked) 0.5f else 0.8f),
             textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
             maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,

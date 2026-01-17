@@ -61,7 +61,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.common.DeleteConfirmationDialog
-import com.dev.taskaroo.common.TopAppBar
+import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
@@ -71,6 +71,7 @@ import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.NativeDatePicker
 import com.dev.taskaroo.utils.NativeTimePicker
+import com.dev.taskaroo.utils.Utils.priorities
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -88,27 +89,7 @@ import taskaroo.composeapp.generated.resources.delete_icon
 import taskaroo.composeapp.generated.resources.tick_icon
 import kotlin.time.ExperimentalTime
 
-/**
- * Screen for creating new tasks or editing existing ones.
- *
- * This screen provides a comprehensive form for task management with:
- * - Priority selection (Urgent, High, Medium, Low)
- * - Deadline date picker with validation
- * - Time selection (hour and minute)
- * - Task title and description fields
- * - Dynamic checklist of task items with add/remove functionality
- * - Delete option (in edit mode only)
- * - Form validation and error handling
- * - Automatic date/time parsing and timestamp generation
- *
- * In edit mode, the screen:
- * - Pre-fills all form fields with existing task data
- * - Preserves task item completion status during edits
- * - Disables date/time editing to maintain task identity
- * - Shows delete button for task removal
- *
- * @property taskTimestampToEdit Optional timestamp of task to edit; null for creating new tasks
- */
+
 class CreateTaskScreen(
     private val taskTimestampToEdit: Long? = null
 ) : Screen {
@@ -122,18 +103,14 @@ class CreateTaskScreen(
         // Determine if we're in edit mode
         val isEditMode = taskTimestampToEdit != null
         var existingTask by remember { mutableStateOf<TaskData?>(null) }
-        var isLoadingTask by remember { mutableStateOf(isEditMode) }
 
         // Load existing task if in edit mode
         LaunchedEffect(taskTimestampToEdit) {
             if (taskTimestampToEdit != null) {
                 try {
-                    isLoadingTask = true
                     existingTask = databaseHelper.getTaskByTimestamp(taskTimestampToEdit)
-                    isLoadingTask = false
                 } catch (e: Exception) {
-                    println("EditTask: Error loading task - ${e.message}")
-                    isLoadingTask = false
+                    e.printStackTrace()
                 }
             }
         }
@@ -161,15 +138,6 @@ class CreateTaskScreen(
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
         val notificationScheduler = rememberNotificationScheduler()
-
-        // Check notification permission status (but don't request it here - that's done on MainScreen)
-        var hasNotificationPermission by remember { mutableStateOf(false) }
-
-        // Check permission status on screen load
-        LaunchedEffect(Unit) {
-            hasNotificationPermission = notificationScheduler.checkPermissionStatus()
-            println("CreateTask: Notification permission status = $hasNotificationPermission")
-        }
 
         // Error handling and loading state
         var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -254,23 +222,22 @@ class CreateTaskScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
 
-                TopAppBar(
+                TaskarooTopAppBar(
                     title = if (isEditMode) "Edit your Task" else "Make your Task",
                     canShowNavigationIcon = true,
                     otherIcon = Res.drawable.tick_icon,
-                    secondIcon = if (isEditMode) Res.drawable.delete_icon else null,
+                    trailingIcon = if (isEditMode) Res.drawable.delete_icon else null,
                     onBackButtonClick = {
                         navigator.pop()
                     },
-                    onSecondIconClick = {
+                    onTrailingIconClick = {
                         if (isEditMode) {
                             showDeleteDialog = true
                         }
                     },
                     onOtherIconClick = {
                         if (taskTitle.isNotBlank() && selectedDate.isNotBlank()) {
-                            if (isSaving) return@TopAppBar  // Prevent double-clicks
-
+                            if (isSaving) return@TaskarooTopAppBar  // Prevent double-clicks
                             coroutineScope.launch {
                                 try {
                                     isSaving = true
@@ -324,7 +291,6 @@ class CreateTaskScreen(
                                                 .toEpochMilliseconds()
                                         }
 
-                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: ${if (isEditMode) "Updating" else "Creating"} task with timestamp: $timestampMillis")
 
                                         // Create task items from checklist
                                         val taskItems = if (isEditMode) {
@@ -361,8 +327,6 @@ class CreateTaskScreen(
                                                 }
                                         }
 
-                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: Task items count: ${taskItems.size}")
-
                                         val completedCount = taskItems.count { it.isCompleted }
 
                                         // Create task data
@@ -377,15 +341,11 @@ class CreateTaskScreen(
                                             meetingLink = if (isMeetingTask) meetingLink.trim() else ""
                                         )
 
-                                        println("${if (isEditMode) "EditTask" else "CreateTask"}: About to ${if (isEditMode) "update" else "insert"} task: ${taskData.title}")
-
                                         // Save to database
                                         if (isEditMode) {
                                             databaseHelper.updateTask(taskData)
-                                            println("EditTask: Task updated successfully!")
                                         } else {
                                             databaseHelper.insertTask(taskData)
-                                            println("CreateTask: Task inserted successfully!")
                                         }
 
                                         // Handle notification scheduling for meetings
@@ -400,13 +360,12 @@ class CreateTaskScreen(
                                                 val hasPermission = notificationScheduler.checkPermissionStatus()
                                                 if (hasPermission) {
                                                     notificationScheduler.scheduleMeetingNotification(taskData)
-                                                    println("CreateTask: Meeting notification scheduled")
                                                 } else {
                                                     println("CreateTask: No notification permission, meeting scheduled without notification")
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            println("CreateTask: Error scheduling notification - ${e.message}")
+                                            e.printStackTrace()
                                         }
 
                                         // Navigate back only on success
@@ -423,7 +382,6 @@ class CreateTaskScreen(
                                         isSaving = false
                                     }
                                 } catch (e: Exception) {
-                                    println("CreateTask: ERROR - ${e.message}")
                                     e.printStackTrace()
                                     errorMessage = "Failed to save task: ${e.message}"
                                     isSaving = false
@@ -487,7 +445,6 @@ class CreateTaskScreen(
                                             // Have permission, enable the toggle
                                             println("CreateTask: Permission granted, enabling meeting toggle")
                                             isMeetingTask = true
-                                            hasNotificationPermission = true
                                         } else {
                                             // No permission, show warning and don't enable
                                             println("CreateTask: Permission not granted, cannot enable meeting")
@@ -502,6 +459,7 @@ class CreateTaskScreen(
                                 }
                             }
                         )
+
                     }
                 }
 
@@ -515,8 +473,6 @@ class CreateTaskScreen(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-
-                    val priorities = listOf("Urgent", "High", "Medium", "Low")
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -737,7 +693,7 @@ class CreateTaskScreen(
 
                 // Task Details Checklist
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
