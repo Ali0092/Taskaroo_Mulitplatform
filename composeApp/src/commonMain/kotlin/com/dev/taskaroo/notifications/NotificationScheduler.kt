@@ -21,6 +21,17 @@ interface NotificationScheduler {
     suspend fun scheduleMeetingNotification(task: TaskData)
 
     /**
+     * Schedule a task notification based on task type and user preferences.
+     * - If task.isMeeting = true, always schedules notification (ignores notificationsEnabled)
+     * - If task.isMeeting = false and notificationsEnabled = true, schedules regular task notification
+     * - If task.isMeeting = false and notificationsEnabled = false, skips scheduling
+     *
+     * @param task The task to schedule notification for
+     * @param notificationsEnabled User preference for regular task notifications
+     */
+    suspend fun scheduleTaskNotification(task: TaskData, notificationsEnabled: Boolean)
+
+    /**
      * Cancel a previously scheduled notification for a task.
      * Safe to call if no notification exists for the timestamp.
      *

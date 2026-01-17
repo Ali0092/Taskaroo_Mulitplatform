@@ -43,6 +43,14 @@ class AndroidPreferencesManager private constructor(
         _settingsFlow.value = _settingsFlow.value.copy(themeMode = themeMode)
     }
 
+    override suspend fun updateNotificationsEnabled(enabled: Boolean) {
+        sharedPreferences.edit()
+            .putBoolean("notifications_enabled", enabled)
+            .apply()
+
+        _settingsFlow.value = _settingsFlow.value.copy(notificationsEnabled = enabled)
+    }
+
     override suspend fun getCurrentSettings(): AppSettings {
         return getCurrentSettingsSync()
     }
@@ -59,6 +67,11 @@ class AndroidPreferencesManager private constructor(
             ThemeMode.LIGHT
         }
 
-        return AppSettings(themeMode = themeMode)
+        val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
+
+        return AppSettings(
+            themeMode = themeMode,
+            notificationsEnabled = notificationsEnabled
+        )
     }
 }

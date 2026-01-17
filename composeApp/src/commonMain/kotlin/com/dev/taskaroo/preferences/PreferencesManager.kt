@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface PreferencesManager {
     val settingsFlow: StateFlow<AppSettings>
     suspend fun updateThemeMode(themeMode: ThemeMode)
+    suspend fun updateNotificationsEnabled(enabled: Boolean)
     suspend fun getCurrentSettings(): AppSettings
     fun onThemeChanged(callback: (ThemeMode) -> Unit)
 }

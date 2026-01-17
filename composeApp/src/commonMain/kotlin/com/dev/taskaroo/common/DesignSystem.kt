@@ -210,7 +210,7 @@ fun DeleteConfirmationDialog(
                 TextButton(
                     onClick = onDismiss
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.onBackground)
                 }
             },
             containerColor = MaterialTheme.colorScheme.background,
@@ -258,7 +258,7 @@ fun TaskarooRoundedIcon(icon: DrawableResource, getAddButtonClick: () -> Unit) {
  */
 @Composable
 fun TaskChipRow(
-    categories: List<String> = listOf("Work", "Personal", "Shopping", "Health"),
+    categories: List<String>,
     onCategorySelected: (String) -> Unit = {}
 ) {
     var selectedCategory by remember { mutableStateOf(categories.first()) }
@@ -281,7 +281,6 @@ fun TaskChipRow(
 
             Box(
                 modifier = Modifier
-                    .height(36.dp)
                     .background(
                         color = if (isSelected) Color.White else Color.Transparent,
                         shape = CircleShape
@@ -296,8 +295,7 @@ fun TaskChipRow(
             ) {
                 Row(
                     modifier = Modifier
-                        .height(36.dp)
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -406,7 +404,6 @@ fun TaskCardConcise(
             if (taskData.taskList.isNotEmpty()) {
                 // Task Items
                 Column(
-                    modifier = Modifier.padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     taskData.taskList.take(2).forEach { taskItem ->
@@ -427,7 +424,7 @@ fun TaskCardConcise(
                 text = "Due: " + taskData.deadline,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
-                color = completedStatusColor
+                color = MaterialTheme.colorScheme.onBackground
             )
 
         }
@@ -653,7 +650,7 @@ fun TaskCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Task Details",
+                            text = "Sub-tasks list",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -714,7 +711,7 @@ fun CircularCheckbox(
         modifier = modifier
             .size(24.dp)
             .drawBehind {
-                val strokeWidth = Stroke(width = 2.dp.toPx())
+                val strokeWidth = Stroke(width = 1.dp.toPx())
                 val radius = size.minDimension / 2
 
                 // Draw circle border
@@ -751,7 +748,7 @@ fun CircularCheckbox(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Checked",
                 tint = Color.White,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(12.dp)
             )
         }
     }
@@ -966,15 +963,15 @@ fun TaskStatusDialog(
                         onDismiss()
                     }
                 ) {
-                    Text("OK", fontWeight = FontWeight.Bold)
+                    Text("OK", fontWeight = FontWeight.Bold, color = primary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.onBackground)
                 }
             },
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -1003,14 +1000,15 @@ private fun StatusOptionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = statusBackground
+            containerColor = if (isSelected) statusBackground else MaterialTheme.colorScheme.background
         ),
         border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = statusColor.copy(alpha = if (isSelected) 0.8f else 0.3f)
+            width = 1.dp,
+            color = statusColor
         )
     ) {
         Row(

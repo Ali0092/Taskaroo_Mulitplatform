@@ -10,7 +10,8 @@ class IosPreferencesManager : PreferencesManager {
 
     private val userDefaults = NSUserDefaults.standardUserDefaults
     private var _currentTheme = getCurrentThemeSync()
-    private val _settingsFlow = MutableStateFlow(AppSettings(_currentTheme))
+    private var _notificationsEnabled = getNotificationsEnabledSync()
+    private val _settingsFlow = MutableStateFlow(AppSettings(_currentTheme, _notificationsEnabled))
 
     override val settingsFlow: StateFlow<AppSettings> = _settingsFlow
 
@@ -25,13 +26,29 @@ class IosPreferencesManager : PreferencesManager {
         _currentTheme = themeMode
 
         // Update StateFlow - single clean update
-        _settingsFlow.value = AppSettings(themeMode)
+        _settingsFlow.value = AppSettings(themeMode, _notificationsEnabled)
 
         println("iOS: Theme updated successfully")
     }
 
+    override suspend fun updateNotificationsEnabled(enabled: Boolean) {
+        println("iOS: Updating notifications enabled to $enabled")
+
+        // Update persistent storage
+        userDefaults.setBool(enabled, "notifications_enabled")
+        userDefaults.synchronize()
+
+        // Update local state
+        _notificationsEnabled = enabled
+
+        // Update StateFlow
+        _settingsFlow.value = AppSettings(_currentTheme, enabled)
+
+        println("iOS: Notifications setting updated successfully")
+    }
+
     override suspend fun getCurrentSettings(): AppSettings {
-        return AppSettings(_currentTheme)
+        return AppSettings(_currentTheme, _notificationsEnabled)
     }
 
     override fun onThemeChanged(callback: (ThemeMode) -> Unit) {
@@ -45,5 +62,13 @@ class IosPreferencesManager : PreferencesManager {
         } catch (e: IllegalArgumentException) {
             ThemeMode.LIGHT
         }
+    }
+
+    private fun getNotificationsEnabledSync(): Boolean {
+        // Check if the key exists, if not return default true
+        if (userDefaults.objectForKey("notifications_enabled") == null) {
+            return true
+        }
+        return userDefaults.boolForKey("notifications_enabled")
     }
 }

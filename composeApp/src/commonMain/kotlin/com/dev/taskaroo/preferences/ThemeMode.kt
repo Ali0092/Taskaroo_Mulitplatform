@@ -6,5 +6,6 @@ enum class ThemeMode(val displayName: String) {
 }
 
 data class AppSettings(
-    val themeMode: ThemeMode = ThemeMode.LIGHT
+    val themeMode: ThemeMode = ThemeMode.LIGHT,
+    val notificationsEnabled: Boolean = true
 )

@@ -89,6 +89,7 @@ class AndroidNotificationScheduler(
                 putExtra("taskTitle", task.title)
                 putExtra("taskSubtitle", task.subtitle)
                 putExtra("task_meeting_link", task.meetingLink)
+                putExtra("is_meeting", true) // Mark as meeting
             }
 
             // Use timestamp as unique request code for PendingIntent
@@ -127,6 +128,85 @@ class AndroidNotificationScheduler(
                     )
                 }
                 println("AndroidNotificationScheduler: Scheduled notification for '${task.title}' at $notificationTime")
+            } catch (e: Exception) {
+                println("AndroidNotificationScheduler: Error scheduling alarm - ${e.message}")
+            }
+        }
+
+    /**
+     * Schedule a task notification based on task type and user preferences.
+     * - If task.isMeeting = true, always schedules notification (ignores notificationsEnabled)
+     * - If task.isMeeting = false and notificationsEnabled = true, schedules regular task notification
+     * - If task.isMeeting = false and notificationsEnabled = false, skips scheduling
+     */
+    override suspend fun scheduleTaskNotification(task: TaskData, notificationsEnabled: Boolean) =
+        withContext(Dispatchers.IO) {
+            // Meeting tasks always notify
+            if (task.isMeeting) {
+                scheduleMeetingNotification(task)
+                return@withContext
+            }
+
+            // Regular tasks only notify if enabled
+            if (!notificationsEnabled) {
+                println("AndroidNotificationScheduler: Regular task notifications disabled, skipping")
+                return@withContext
+            }
+
+            // Schedule regular task notification
+            val notificationTime = task.timestampMillis - (MINUTES_BEFORE * 60 * 1000)
+            val currentTime = System.currentTimeMillis()
+
+            if (notificationTime <= currentTime) {
+                println("AndroidNotificationScheduler: Notification time is in the past, skipping")
+                return@withContext
+            }
+
+            // Create intent to broadcast when alarm triggers
+            val intent = Intent(context, MeetingNotificationReceiver::class.java).apply {
+                putExtra("taskTimestamp", task.timestampMillis)
+                putExtra("taskTitle", task.title)
+                putExtra("taskSubtitle", task.subtitle)
+                putExtra("task_meeting_link", task.meetingLink)
+                putExtra("is_meeting", false) // Mark as regular task
+            }
+
+            // Use timestamp as unique request code for PendingIntent
+            val requestCode = task.timestampMillis.toInt()
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // Schedule alarm based on Android version capabilities
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    // Android 12+: Check if we can schedule exact alarms
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            notificationTime,
+                            pendingIntent
+                        )
+                    } else {
+                        println("AndroidNotificationScheduler: Cannot schedule exact alarms, using inexact alarm instead")
+                        alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            notificationTime,
+                            pendingIntent
+                        )
+                    }
+                } else {
+                    // Android 11 and below
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        notificationTime,
+                        pendingIntent
+                    )
+                }
+                println("AndroidNotificationScheduler: Scheduled regular task notification for '${task.title}' at $notificationTime")
             } catch (e: Exception) {
                 println("AndroidNotificationScheduler: Error scheduling alarm - ${e.message}")
             }
@@ -216,8 +296,9 @@ class MeetingNotificationReceiver : BroadcastReceiver() {
         val taskTitle = intent.getStringExtra("taskTitle") ?: "Meeting"
         val taskSubtitle = intent.getStringExtra("taskSubtitle") ?: ""
         val taskMeetingLink = intent.getStringExtra("task_meeting_link") ?: ""
+        val isMeeting = intent.getBooleanExtra("is_meeting", true) // Default true for backward compatibility
 
-        println("MeetingNotificationReceiver: Received notification for '$taskTitle'")
+        println("MeetingNotificationReceiver: Received notification for '$taskTitle' (isMeeting=$isMeeting)")
 
         // Create intent to open MainActivity with task timestamp
         // This will be handled by MainActivity to navigate to the task details
@@ -240,9 +321,16 @@ class MeetingNotificationReceiver : BroadcastReceiver() {
             taskSubtitle
         }
 
+        // Set title based on task type
+        val notificationTitle = if (isMeeting) {
+            "Meeting: $taskTitle starts in 15 minutes"
+        } else {
+            "Task: $taskTitle due in 15 minutes"
+        }
+
         val notification = NotificationCompat.Builder(context, AndroidNotificationScheduler.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Meeting: $taskTitle starts in 15 minutes")
+            .setContentTitle(notificationTitle)
             .setContentText(notificationText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(notificationText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)

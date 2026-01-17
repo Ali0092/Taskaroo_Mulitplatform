@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,12 +67,15 @@ import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.notifications.rememberNotificationScheduler
+import com.dev.taskaroo.preferences.AppSettings
+import com.dev.taskaroo.preferences.getPreferencesManager
 import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.NativeDatePicker
 import com.dev.taskaroo.utils.NativeTimePicker
 import com.dev.taskaroo.utils.Utils.priorities
+import com.dev.taskaroo.utils.currentTimeMillis
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -123,9 +127,38 @@ class CreateTaskScreen(
             val today = todayDate()
             mutableStateOf("${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}")
         }
-        var selectedHour by remember { mutableStateOf(12) }     // 1-12
-        var selectedMinute by remember { mutableStateOf(0) }    // 0-59
-        var selectedAmPm by remember { mutableStateOf("PM") }   // "AM" or "PM"
+        // Default time is 1 hour ahead of current time
+        var selectedHour by remember {
+            val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+            val currentDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+            val oneHourLater = currentDateTime.hour + 1
+            val hour24 = if (oneHourLater >= 24) oneHourLater - 24 else oneHourLater
+            val (hour12, _) = when {
+                hour24 == 0 -> Pair(12, "AM")
+                hour24 < 12 -> Pair(hour24, "AM")
+                hour24 == 12 -> Pair(12, "PM")
+                else -> Pair(hour24 - 12, "PM")
+            }
+            mutableStateOf(hour12)
+        }
+        var selectedMinute by remember {
+            val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+            val currentDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+            mutableStateOf(currentDateTime.minute)
+        }
+        var selectedAmPm by remember {
+            val now = Instant.fromEpochMilliseconds(currentTimeMillis())
+            val currentDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+            val oneHourLater = currentDateTime.hour + 1
+            val hour24 = if (oneHourLater >= 24) oneHourLater - 24 else oneHourLater
+            val (_, amPm) = when {
+                hour24 == 0 -> Pair(12, "AM")
+                hour24 < 12 -> Pair(hour24, "AM")
+                hour24 == 12 -> Pair(12, "PM")
+                else -> Pair(hour24 - 12, "PM")
+            }
+            mutableStateOf(amPm)
+        }
         var isMeetingTask by remember { mutableStateOf(false) } // Meeting toggle
         var meetingLink by remember { mutableStateOf("") }       // Meeting link field
 
@@ -138,6 +171,10 @@ class CreateTaskScreen(
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
         val notificationScheduler = rememberNotificationScheduler()
+
+        // Settings state for notification preferences
+        val preferencesManager = remember { getPreferencesManager() }
+        val settings by preferencesManager.settingsFlow.collectAsState(AppSettings())
 
         // Error handling and loading state
         var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -238,6 +275,16 @@ class CreateTaskScreen(
                     onOtherIconClick = {
                         if (taskTitle.isNotBlank() && selectedDate.isNotBlank()) {
                             if (isSaving) return@TaskarooTopAppBar  // Prevent double-clicks
+
+                            // Validate meeting link if provided
+                            if (isMeetingTask && meetingLink.trim().isNotEmpty()) {
+                                val urlPattern = "^(https?://|www\\.).+".toRegex(RegexOption.IGNORE_CASE)
+                                if (!meetingLink.trim().matches(urlPattern)) {
+                                    errorMessage = "Please enter a valid URL for the meeting link (e.g., https://zoom.us/j/...)"
+                                    return@TaskarooTopAppBar
+                                }
+                            }
+
                             coroutineScope.launch {
                                 try {
                                     isSaving = true
@@ -348,20 +395,19 @@ class CreateTaskScreen(
                                             databaseHelper.insertTask(taskData)
                                         }
 
-                                        // Handle notification scheduling for meetings
+                                        // Handle notification scheduling
                                         try {
                                             // Always cancel existing notification
                                             notificationScheduler.cancelNotification(taskData.timestampMillis)
 
-                                            // Reschedule if meeting and not done
-                                            if (isMeetingTask && !taskData.isDone) {
-                                                // Permission was already requested when toggling meeting on
-                                                // Just check if we have it and schedule
+                                            // Reschedule if not done
+                                            if (!taskData.isDone) {
                                                 val hasPermission = notificationScheduler.checkPermissionStatus()
                                                 if (hasPermission) {
-                                                    notificationScheduler.scheduleMeetingNotification(taskData)
+                                                    // Use universal scheduling that respects notification preferences
+                                                    notificationScheduler.scheduleTaskNotification(taskData, settings.notificationsEnabled)
                                                 } else {
-                                                    println("CreateTask: No notification permission, meeting scheduled without notification")
+                                                    println("CreateTask: No notification permission")
                                                 }
                                             }
                                         } catch (e: Exception) {
@@ -735,7 +781,7 @@ class CreateTaskScreen(
                     ) {
                         taskDetailItems.forEachIndexed { index, item ->
                             if (index < taskDetailItems.size) {
-                                var itemText by remember { mutableStateOf(item) }
+                                var itemText by remember(item) { mutableStateOf(item) }
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),

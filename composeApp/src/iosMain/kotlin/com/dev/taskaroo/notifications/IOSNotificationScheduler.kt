@@ -125,14 +125,112 @@ class IOSNotificationScheduler : NotificationScheduler {
     }
 
     /**
+     * Schedule a task notification based on task type and user preferences.
+     * - If task.isMeeting = true, always schedules notification (ignores notificationsEnabled)
+     * - If task.isMeeting = false and notificationsEnabled = true, schedules regular task notification
+     * - If task.isMeeting = false and notificationsEnabled = false, skips scheduling
+     */
+    override suspend fun scheduleTaskNotification(task: TaskData, notificationsEnabled: Boolean) {
+        // Meeting tasks always notify
+        if (task.isMeeting) {
+            scheduleMeetingNotification(task)
+            return
+        }
+
+        // Regular tasks only notify if enabled
+        if (!notificationsEnabled) {
+            println("IOSNotificationScheduler: Regular task notifications disabled, skipping")
+            return
+        }
+
+        // Schedule regular task notification
+        val notificationTime = task.timestampMillis - (MINUTES_BEFORE * 60 * 1000)
+        val currentTime = NSDate().timeIntervalSince1970 * 1000  // Current time in milliseconds
+
+        if (notificationTime <= currentTime.toLong()) {
+            println("IOSNotificationScheduler: Notification time is in the past, skipping")
+            return
+        }
+
+        dispatch_async(dispatch_get_main_queue()) {
+            try {
+                // Create notification content for regular task
+                val bodyText = if (task.meetingLink.isNotEmpty()) {
+                    "${task.subtitle}\n\nMeeting Link: ${task.meetingLink}"
+                } else {
+                    task.subtitle
+                }
+
+                val content = UNMutableNotificationContent().apply {
+                    setTitle("Task: ${task.title} due in 15 minutes")
+                    setBody(bodyText)
+                    setSound(UNNotificationSound.defaultSound())
+
+                    // Add taskTimestamp and isMeeting to userInfo
+                    setUserInfo(mapOf(
+                        "taskTimestamp" to task.timestampMillis.toString(),
+                        "meetingLink" to task.meetingLink,
+                        "isMeeting" to "false"
+                    ))
+                }
+
+                // Convert timestamp to date components for calendar trigger
+                val referenceDate = NSDate(timeIntervalSinceReferenceDate = 0.0)
+                val seconds1970To2001 = 978307200.0
+                val triggerDate = NSDate(timeIntervalSinceReferenceDate = (notificationTime.toDouble() / 1000.0) - seconds1970To2001)
+                val calendar = NSCalendar.currentCalendar
+
+                // Extract date components
+                val components = calendar.components(
+                    ((1L shl 0) or  // NSCalendarUnitEra
+                    (1L shl 1) or  // NSCalendarUnitYear
+                    (1L shl 2) or  // NSCalendarUnitMonth
+                    (1L shl 3) or  // NSCalendarUnitDay
+                    (1L shl 4) or  // NSCalendarUnitHour
+                    (1L shl 5) or  // NSCalendarUnitMinute
+                    (1L shl 6)).toULong(),    // NSCalendarUnitSecond
+                    fromDate = triggerDate
+                )
+
+                // Create trigger
+                val trigger = UNCalendarNotificationTrigger.triggerWithDateMatchingComponents(
+                    components,
+                    repeats = false
+                )
+
+                // Create notification request with unique identifier for regular task
+                val identifier = "task_${task.timestampMillis}"
+                val request = UNNotificationRequest.requestWithIdentifier(
+                    identifier = identifier,
+                    content = content,
+                    trigger = trigger
+                )
+
+                // Schedule the notification
+                notificationCenter.addNotificationRequest(request) { error ->
+                    if (error != null) {
+                        println("IOSNotificationScheduler: Error scheduling regular task notification - $error")
+                    } else {
+                        println("IOSNotificationScheduler: Scheduled regular task notification for '${task.title}' at $notificationTime")
+                    }
+                }
+            } catch (e: Exception) {
+                println("IOSNotificationScheduler: Exception scheduling regular task notification - ${e.message}")
+            }
+        }
+    }
+
+    /**
      * Cancel a previously scheduled notification.
      * Uses the task timestamp to identify and cancel the correct notification.
      */
     override suspend fun cancelNotification(taskTimestamp: Long) {
         dispatch_async(dispatch_get_main_queue()) {
             try {
-                val identifier = "meeting_$taskTimestamp"
-                notificationCenter.removePendingNotificationRequestsWithIdentifiers(listOf(identifier))
+                // Cancel both meeting and task notifications to handle task type changes
+                val meetingIdentifier = "meeting_$taskTimestamp"
+                val taskIdentifier = "task_$taskTimestamp"
+                notificationCenter.removePendingNotificationRequestsWithIdentifiers(listOf(meetingIdentifier, taskIdentifier))
                 println("IOSNotificationScheduler: Cancelled notification for $taskTimestamp")
             } catch (e: Exception) {
                 println("IOSNotificationScheduler: Error cancelling notification - ${e.message}")

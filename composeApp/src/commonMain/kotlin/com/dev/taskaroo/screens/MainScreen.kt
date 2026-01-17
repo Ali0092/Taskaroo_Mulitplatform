@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.no_data_placeholder
-import taskaroo.composeapp.generated.resources.theme_icon
+import taskaroo.composeapp.generated.resources.settings_icon
 
 class MainScreen : Screen {
 
@@ -179,16 +179,9 @@ class MainScreen : Screen {
                 TaskarooTopAppBar(
                     title = "From to-do to done✨",
                     canShowNavigationIcon = false,
-                    otherIcon = Res.drawable.theme_icon,
+                    otherIcon = Res.drawable.settings_icon,
                     onOtherIconClick = {
-                        coroutineScope.launch {
-                            val newTheme = if (settings.themeMode == ThemeMode.LIGHT) {
-                                ThemeMode.DARK
-                            } else {
-                                ThemeMode.LIGHT
-                            }
-                            preferencesManager.updateThemeMode(newTheme)
-                        }
+                        navigator.push(SettingsScreen())
                     }
                 )
 
