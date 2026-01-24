@@ -268,7 +268,7 @@ fun TaskChipRow(
             .fillMaxWidth()
             .horizontalScroll(scrollState)
             .background(
-                color = primaryLiteColorVariant.copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.surface,
                 shape = CircleShape
             )
             .padding(horizontal = 4.dp, vertical = 4.dp),
@@ -281,7 +281,7 @@ fun TaskChipRow(
             Box(
                 modifier = Modifier
                     .background(
-                        color = if (isSelected) Color.White else Color.Transparent,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.50f) else Color.Transparent,
                         shape = CircleShape
                     )
                     .clip(CircleShape)
@@ -300,7 +300,11 @@ fun TaskChipRow(
                 ) {
                     Text(
                         text = category,
-                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onBackground,
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.onBackground
+                        } else {
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
+                    },
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

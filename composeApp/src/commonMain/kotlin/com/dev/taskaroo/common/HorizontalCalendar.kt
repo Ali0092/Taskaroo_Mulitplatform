@@ -56,7 +56,6 @@ import taskaroo.composeapp.generated.resources.right_arrow
 @Composable
 fun HorizontalCalendar(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(15.dp),
     onDateClickListener: (LocalDate) -> Unit
 ) {
     val dataSource = remember { CalendarDataSource() }
@@ -68,7 +67,6 @@ fun HorizontalCalendar(
         modifier = modifier.fillMaxWidth()
             .wrapContentHeight()
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
             .padding(12.dp)
     ) {
 
@@ -90,7 +88,6 @@ fun HorizontalCalendar(
 
         Content(
             data = data,
-            shape = shape,
         ) { date ->
             data = data.copy(
                 selectedDate = date,
@@ -158,7 +155,6 @@ fun Header(
 @Composable
 fun Content(
     data: CalendarUiModel,
-    shape: Shape,
     onDateClickListener: (CalendarUiModel.Date) -> Unit
 ) {
     Row(
@@ -171,7 +167,6 @@ fun Content(
         data.visibleDates.forEach {
             ContentItem(
                 date = it,
-                shape = shape,
                 onClickListener = onDateClickListener
             )
         }
@@ -188,25 +183,19 @@ fun Content(
 @Composable
 fun RowScope.ContentItem(
     date: CalendarUiModel.Date,
-    shape: Shape,
     onClickListener: (CalendarUiModel.Date) -> Unit
 ) {
     Column(
         modifier = Modifier
             .weight(1f)
-            .padding(4.dp)
-            .background(if (date.isSelected) completedStatusColor.copy(alpha = 0.4f) else MaterialTheme.colorScheme.background,shape)
-            .clip(shape)
-            .border(
-                if (date.isSelected) 2.dp else 1.dp,
-                if (date.isSelected) completedStatusColor else primaryLiteColorVariant,
-                shape
-            )
+            .background(if (date.isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent, CircleShape)
+            .padding(horizontal = 2.dp)
+            .clip(CircleShape)
             .clickable { onClickListener(date) }
-            .padding(vertical = 10.dp),
+            .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (date.isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.primary))
+        Text(text = date.day, style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (date.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)))
         Spacer(Modifier.height(8.dp))
         Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground))
     }
