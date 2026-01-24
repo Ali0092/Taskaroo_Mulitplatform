@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -238,7 +239,7 @@ fun HourColumnItem(
             Column(modifier = Modifier.fillMaxSize().weight(1f)) {
                 Spacer(
                     modifier = Modifier
-                        .padding(top = 20.dp)
+                        .padding(top = 14.dp)
                         .height(1.dp)
                         .fillMaxWidth(1f)
                         .background(primaryLiteColorVariant)

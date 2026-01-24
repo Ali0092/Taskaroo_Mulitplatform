@@ -271,7 +271,7 @@ fun TaskChipRow(
                 color = MaterialTheme.colorScheme.surface,
                 shape = CircleShape
             )
-            .padding(horizontal = 4.dp, vertical = 4.dp),
+        ,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -281,11 +281,10 @@ fun TaskChipRow(
             Box(
                 modifier = Modifier
                     .background(
-                        color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.50f) else Color.Transparent,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
                         shape = CircleShape
                     )
                     .clip(CircleShape)
-                    .then(if (isSelected) Modifier.border(width = 1.dp, primaryLiteColorVariant.copy(alpha = 0.5f), shape = CircleShape) else Modifier)
                     .clickable {
                         selectedCategory = category
                         onCategorySelected(category)
@@ -294,18 +293,18 @@ fun TaskChipRow(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = category,
                         color = if (isSelected) {
-                            MaterialTheme.colorScheme.onBackground
+                            MaterialTheme.colorScheme.primary
                         } else {
                         MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
                     },
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                     )
                 }
             }
@@ -558,12 +557,12 @@ fun TaskCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             )
             {
                 // Priority Chip
-                val (priorityColor, priorityBackground) = when (taskData.category.lowercase()) {
+                val (priorityColor) = when (taskData.category.lowercase()) {
                     "urgent" -> urgentPriorityColor to urgentPriorityBackground
                     "high" -> highPriorityColor to highPriorityBackground
                     "medium" -> mediumPriorityColor to mediumPriorityBackground
@@ -571,15 +570,22 @@ fun TaskCard(
                     else -> Color.Gray to Color.Transparent
                 }
 
+                Text(
+                    text = "Due "+taskData.deadline,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
                 Box(
                     modifier = Modifier
                         .background(
-                            color = Color.Transparent,
+                            color = MaterialTheme.colorScheme.background,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .border(
                             width = 1.dp,
-                            color = Color.Gray.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.onBackground,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 3.dp)
@@ -602,38 +608,6 @@ fun TaskCard(
                     }
                 }
 
-                // Deadline Chip
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = Color.Gray.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 3.dp)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Due",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = taskData.deadline,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
             }
 
             // Task Details Section
@@ -643,37 +617,15 @@ fun TaskCard(
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                         .background(
-                            color = primaryLiteColorVariant.copy(0.5f)
+                            color = MaterialTheme.colorScheme.primary.copy(0.15f)
                         )
-                        .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Sub-tasks list",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            text = taskData.progressText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                        )
-                    }
-
-                    // Progress Indicator
-                    LinearProgressIndicator(
-                        progress = { taskData.progress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        color = primaryColorVariant,
-                        trackColor = MaterialTheme.colorScheme.surface
+                    Text(
+                        text = "Sub-tasks list",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     // Task Items
@@ -817,8 +769,6 @@ fun TaskarooStatusBadge(
         status
     }
 
-    val shape = if (fullWidth) RoundedCornerShape(12.dp) else CircleShape
-
     val statusColor = when (displayStatus) {
         TaskStatus.COMPLETED -> completedStatusColor
         TaskStatus.OVERDUE -> overdueStatusColor
@@ -831,10 +781,11 @@ fun TaskarooStatusBadge(
             modifier = Modifier
                 .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
                 .background(
-                    color = if (fullWidth) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.background,
-                    shape = shape
+                    color = MaterialTheme.colorScheme.background,
+                    shape = RoundedCornerShape(8.dp)
                 )
-                .clip(shape)
+                .clip(RoundedCornerShape(8.dp))
+                .border(width = 1.dp, color = MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(8.dp))
                 .clickable { showDialog = true }
                 .padding(horizontal = if (fullWidth) 16.dp else 8.dp, vertical = if (fullWidth) 12.dp else 4.dp)
         ) {

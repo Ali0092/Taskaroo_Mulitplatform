@@ -38,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -60,6 +61,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.no_data_placeholder
+import taskaroo.composeapp.generated.resources.no_task
 import taskaroo.composeapp.generated.resources.settings_icon
 
 class MainScreen : Screen {
@@ -210,15 +212,16 @@ class MainScreen : Screen {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                painter = painterResource(Res.drawable.no_data_placeholder),
+                                painter = painterResource(Res.drawable.no_task),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "No tasks yet\nadd one to get started",
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
