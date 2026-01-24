@@ -80,7 +80,6 @@ import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.overdueStatusBackground
 import com.dev.taskaroo.overdueStatusColor
-import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.undoneStatusBackground
@@ -963,7 +962,7 @@ fun TaskStatusDialog(
                         onDismiss()
                     }
                 ) {
-                    Text("OK", fontWeight = FontWeight.Bold, color = primary)
+                    Text("OK", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
             },
             dismissButton = {
@@ -1045,41 +1044,6 @@ private fun StatusOptionCard(
     }
 }
 
-/**
- * Pill-shaped floating action button with calendar icon and text
- *
- * @param onAddClick Callback invoked when the button is clicked
- * @param modifier Modifier to apply to the button container
- */
-@Composable
-fun CapsuleFloatingActionButton(
-    onAddClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        Row(
-            modifier = Modifier
-                .clip(CircleShape)
-                .border(BorderStroke(width = 1.dp, color = primaryColorVariant.copy(alpha = 0.8f)), shape = CircleShape)
-                .clickable {
-                    onAddClick()
-                }
-                .background(primary)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = "Calendar", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 16.sp)
-            Image(
-                painter = painterResource(Res.drawable.calendar),
-                contentDescription = "add_task",
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
 
 /**
  * Individual task item row with checkbox and text

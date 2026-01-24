@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dev.taskaroo.common.CapsuleFloatingActionButton
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskCard
 import com.dev.taskaroo.common.TaskChipRow

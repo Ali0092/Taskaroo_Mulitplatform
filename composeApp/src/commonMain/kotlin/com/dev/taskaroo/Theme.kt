@@ -26,21 +26,22 @@ import com.dev.taskaroo.preferences.ThemeMode
  * Core background colors
  */
 /** Main background color for screens and surfaces */
-val backgroundColorLite: Color = Color(0xFFF3F3F3)
-val backgroundColorDark: Color = Color(0xFF282828)
+val backgroundColorLite: Color = Color(0xFFF5F5F5)
+val backgroundColorDark: Color = Color(0xFF101010)
 /** Text and content color on background surfaces */
-val onBackgroundColorLite: Color = Color(0xFF454545)
-val onBackgroundColorDark: Color = Color(0xFFF3F3F3)
+val onBackgroundColorLite: Color = Color(0xFF111111)
+val onBackgroundColorDark: Color = Color(0xFFFFFFFF)
 
 val surfaceColorLite: Color = Color(0xFFFFFFFF)
-val surfaceColorDark: Color = Color(0xFF3E3E3E)
+val surfaceColorDark: Color = Color(0xFF181818)
 
 /**
  * Primary colors
  * Used for app branding, primary actions, and key UI elements
  */
 /** Primary brand color (green tone) */
-val primary: Color = Color(0xFF6B806B)
+val primaryForLite: Color = Color(0xFF6B806B)
+val primaryForDark: Color = Color(0xFF7C8E7C)
 /** Darker variant of primary color for contrast */
 val primaryColorVariant: Color = Color(0xFF4F634F)
 /** Lighter variant of primary color for subtle elements */
@@ -95,7 +96,7 @@ val overdueStatusBackground = Color(0xFFFFEBEE)
 
 
 private val darkColorScheme = darkColorScheme(
-    primary = primaryColorVariant,
+    primary = primaryForDark,
 //    secondary = GenZSecondary,
 //    tertiary = GenZAccent,
     background = backgroundColorDark,
@@ -107,7 +108,7 @@ private val darkColorScheme = darkColorScheme(
 )
 
 private val lightColorScheme = lightColorScheme(
-    primary = primary,
+    primary = primaryForLite,
 //    secondary = GenZSecondary,
 //    tertiary = GenZAccent,
     background = backgroundColorLite,

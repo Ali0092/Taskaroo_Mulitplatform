@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.taskaroo.completedStatusColor
-import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.todayDate
@@ -207,7 +206,7 @@ fun RowScope.ContentItem(
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (date.isSelected) MaterialTheme.colorScheme.onBackground else primary))
+        Text(text = date.day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (date.isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.primary))
         Spacer(Modifier.height(8.dp))
         Text(text = date.date.dayOfMonth.toString(), style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground))
     }

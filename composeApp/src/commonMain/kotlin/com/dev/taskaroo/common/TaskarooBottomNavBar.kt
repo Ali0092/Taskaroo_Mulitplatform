@@ -71,13 +71,14 @@ fun TaskarooBottomNavBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .background(Color.Transparent)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         // Main navigation container with floating effect
         Box(
             modifier = Modifier
-                .height(68.dp)
+                .height(60.dp)
                 .fillMaxWidth(0.88f)
                 .shadow(
                     elevation = elevation,
@@ -99,9 +100,7 @@ fun TaskarooBottomNavBar(
         ) {
             Row(
                 modifier = Modifier
-                    .matchParentSize()
-                    .padding(horizontal = 6.dp)
-                ,
+                    .matchParentSize(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -145,7 +144,7 @@ private fun BottomNavItem(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primary
         } else {
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
         },
         animationSpec = tween(
             durationMillis = 350,

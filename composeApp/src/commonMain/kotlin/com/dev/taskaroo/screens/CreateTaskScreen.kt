@@ -69,7 +69,6 @@ import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.getPreferencesManager
-import com.dev.taskaroo.primary
 import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.NativeDatePicker
@@ -774,7 +773,7 @@ class CreateTaskScreen(
                             Text(
                                 text = "+ Add Item",
                                 fontSize = 14.sp,
-                                color = primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
                             )
                         }

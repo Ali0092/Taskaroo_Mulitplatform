@@ -35,9 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.CurrentScreen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
@@ -139,14 +136,11 @@ private fun TabContentWithBottomBarControl(
     tab: Tab,
     onBottomBarVisibilityChange: (Boolean) -> Unit
 ) {
-    tab.Content()
-
-    // Monitor the navigator inside each tab to control bottom bar visibility
-    val navigator = LocalNavigator.current
-
-    LaunchedEffect(navigator?.size) {
-        // Show bottom bar only when at root of tab (navigator size == 1)
-        val isAtRoot = navigator?.size == 1
-        onBottomBarVisibilityChange(isAtRoot)
+    // Use the new tracking method that accesses Navigator from inside its composition scope
+    if (tab is BottomNavTab) {
+        tab.ContentWithBottomBarTracking(onBottomBarVisibilityChange)
+    } else {
+        // Fallback for non-BottomNavTab tabs (shouldn't happen in this app)
+        tab.Content()
     }
 }
