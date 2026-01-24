@@ -103,17 +103,13 @@ class CalendarScreen : Screen {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPaddings)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TaskarooTopAppBar(
                     title = "Schedule",
-                    canShowNavigationIcon = true,
+                    canShowNavigationIcon = false,
                     otherIcon = Res.drawable.add_icon,
-                    onBackButtonClick = {
-                        navigator.pop()
-                    },
                     onOtherIconClick = {
                         navigator.push(CreateTaskScreen())
                     }

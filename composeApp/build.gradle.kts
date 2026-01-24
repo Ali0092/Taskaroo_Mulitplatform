@@ -19,6 +19,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import java.util.Properties
 import kotlin.collections.set
 
 // Apply required plugins for Kotlin Multiplatform, Android, Compose, and SQLDelight
@@ -79,6 +80,7 @@ kotlin {
             // Voyager
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
+            implementation(libs.voyager.tabNavigator)
 
             // Calendar
             implementation(libs.kotlinx.datetime)
@@ -93,6 +95,14 @@ kotlin {
         }
     }
 }
+
+// Load keystore properties for release signing
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.dev.taskaroo"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -101,9 +111,28 @@ android {
         applicationId = "com.dev.taskaroo"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.3"
     }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                val storeFilePath = keystoreProperties.getProperty("storeFile")
+                val storePass = keystoreProperties.getProperty("storePassword")
+                val alias = keystoreProperties.getProperty("keyAlias")
+                val keyPass = keystoreProperties.getProperty("keyPassword")
+
+                if (storeFilePath != null && storePass != null && alias != null && keyPass != null) {
+                    storeFile = file(storeFilePath)
+                    storePassword = storePass
+                    keyAlias = alias
+                    keyPassword = keyPass
+                }
+            }
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -112,6 +141,11 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            // Only set signing config if keystore properties are available
+            val releaseSigningConfig = signingConfigs.findByName("release")
+            if (releaseSigningConfig?.storeFile != null) {
+                signingConfig = releaseSigningConfig
+            }
         }
     }
     compileOptions {

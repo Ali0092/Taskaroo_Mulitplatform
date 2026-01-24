@@ -47,6 +47,26 @@ actual class DatabaseDriverFactory(private val context: Context) {
                         // Column doesn't exist, add it
                         db.execSQL("ALTER TABLE Task ADD COLUMN isTaskDone INTEGER NOT NULL DEFAULT 0")
                     }
+
+                    // Check if isMeeting column exists, if not add it
+                    try {
+                        db.query("SELECT isMeeting FROM Task LIMIT 1").use { cursor ->
+                            cursor.moveToFirst()
+                        }
+                    } catch (_: Exception) {
+                        // Column doesn't exist, add it
+                        db.execSQL("ALTER TABLE Task ADD COLUMN isMeeting INTEGER NOT NULL DEFAULT 0")
+                    }
+
+                    // Check if meetingLink column exists, if not add it
+                    try {
+                        db.query("SELECT meetingLink FROM Task LIMIT 1").use { cursor ->
+                            cursor.moveToFirst()
+                        }
+                    } catch (_: Exception) {
+                        // Column doesn't exist, add it
+                        db.execSQL("ALTER TABLE Task ADD COLUMN meetingLink TEXT NOT NULL DEFAULT ''")
+                    }
                 }
             }
         )

@@ -31,3 +31,8 @@ iosApp/iosApp.xcworkspace/
 
 # Keep Podfile for dependency management
 !iosApp/Podfile
+
+# Android Keystore and signing files
+*.jks
+*.keystore
+keystore.properties

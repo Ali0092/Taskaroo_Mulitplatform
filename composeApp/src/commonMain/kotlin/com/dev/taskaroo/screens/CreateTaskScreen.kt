@@ -108,6 +108,9 @@ class CreateTaskScreen(
         val isEditMode = taskTimestampToEdit != null
         var existingTask by remember { mutableStateOf<TaskData?>(null) }
 
+        // Check if we can go back (navigator size > 1 means we're not at root)
+        val canNavigateBack = navigator.size > 1
+
         // Load existing task if in edit mode
         LaunchedEffect(taskTimestampToEdit) {
             if (taskTimestampToEdit != null) {
@@ -253,19 +256,20 @@ class CreateTaskScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPaddings)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .verticalScroll(scrollState),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
                 TaskarooTopAppBar(
                     title = if (isEditMode) "Edit your Task" else "Make your Task",
-                    canShowNavigationIcon = true,
+                    canShowNavigationIcon = canNavigateBack,
                     otherIcon = Res.drawable.tick_icon,
                     trailingIcon = if (isEditMode) Res.drawable.delete_icon else null,
                     onBackButtonClick = {
-                        navigator.pop()
+                        if (canNavigateBack) {
+                            navigator.pop()
+                        }
                     },
                     onTrailingIconClick = {
                         if (isEditMode) {

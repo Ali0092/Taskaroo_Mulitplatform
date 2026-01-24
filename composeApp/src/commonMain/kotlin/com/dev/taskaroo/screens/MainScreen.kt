@@ -158,22 +158,12 @@ class MainScreen : Screen {
 
         }
 
-        Scaffold(
-            floatingActionButton = {
-                // Floating Action Button
-                CapsuleFloatingActionButton(
-                    onAddClick = {
-                        navigator.push(CalendarScreen())
-                    },
-                )
-            }
-        ) { innerPaddings ->
+        Scaffold { innerPaddings ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPaddings)
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
             ) {
 
                 TaskarooTopAppBar(

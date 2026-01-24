@@ -20,7 +20,7 @@ import com.dev.taskaroo.database.ProvideDatabaseHelper
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
-import com.dev.taskaroo.screens.MainScreen
+import com.dev.taskaroo.screens.RootNavigationScreen
 import com.dev.taskaroo.utils.SetupSystemBars
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -37,7 +37,7 @@ fun App() {
 
     TaskarooAppTheme(themeMode = settings.themeMode) {
         ProvideDatabaseHelper {
-            Navigator(screen = MainScreen())
+            Navigator(screen = RootNavigationScreen())
         }
     }
 }

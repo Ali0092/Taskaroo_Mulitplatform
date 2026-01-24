@@ -123,7 +123,6 @@ class PreviewTaskScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(innerPadding)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
