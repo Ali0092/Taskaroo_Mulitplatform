@@ -67,7 +67,6 @@ fun HorizontalCalendar(
         modifier = modifier.fillMaxWidth()
             .wrapContentHeight()
             .clip(RoundedCornerShape(12.dp))
-            .padding(12.dp)
     ) {
 
         Header(
@@ -120,7 +119,7 @@ fun Header(
             modifier = Modifier.weight(1f),
             style = TextStyle(
                 fontSize = 19.sp,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onBackground
             )
         )
@@ -188,11 +187,12 @@ fun RowScope.ContentItem(
     Column(
         modifier = Modifier
             .weight(1f)
+            .padding(horizontal = 6.dp)
             .background(if (date.isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent, CircleShape)
-            .padding(horizontal = 2.dp)
             .clip(CircleShape)
             .clickable { onClickListener(date) }
-            .padding(vertical = 16.dp),
+            .padding(vertical = 16.dp)
+        ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = date.day, style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (date.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)))

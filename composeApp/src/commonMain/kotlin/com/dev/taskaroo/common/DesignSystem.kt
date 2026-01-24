@@ -336,7 +336,8 @@ fun TaskCardConcise(
             onClick = { onClick() },
             onLongClick = { onLongClick() }
         ),
-        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
@@ -458,13 +459,14 @@ fun TaskCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .alpha(if (taskData.isDone) 0.85f else 1f)
             .combinedClickable(
                 onClick = { onClick() },
                 onLongClick = { onLongClick() }
             ),
-        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
@@ -486,12 +488,12 @@ fun TaskCard(
                     fontSize = 18.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
                     textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
 
                 TaskarooStatusBadge(
                     status = taskData.isDone.toTaskStatus(),
@@ -502,8 +504,6 @@ fun TaskCard(
                     fullWidth = false
                 )
             }
-
-            Spacer(Modifier.height(8.dp))
 
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 12.dp)) {
 
@@ -532,7 +532,7 @@ fun TaskCard(
                         )
                         Text(
                             text = taskData.meetingLink,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Normal,
                             color = Color(0xFF0F7BE8),
                             maxLines = 2,
@@ -544,9 +544,9 @@ fun TaskCard(
                     // Show description only if no meeting link
                     Text(
                         text = taskData.subtitle,
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

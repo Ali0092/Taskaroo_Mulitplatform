@@ -104,7 +104,7 @@ class CalendarScreen : Screen {
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(21.dp)
             ) {
                 TaskarooTopAppBar(
                     title = "Schedule",
@@ -119,16 +119,6 @@ class CalendarScreen : Screen {
                     selectedDate = newSelectedDate
                     println("Selected date: $selectedDate")
                 }
-
-                Text(
-                    text = "Today's todo list",
-                    modifier = Modifier.weight(1f),
-                    style = TextStyle(
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                )
 
                 // Group tasks by hour
                 val tasksByHour = remember(tasksForSelectedDate) {
