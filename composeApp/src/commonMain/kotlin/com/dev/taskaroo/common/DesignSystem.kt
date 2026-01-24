@@ -343,7 +343,7 @@ fun TaskCardConcise(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp, horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             // Title and Subtitle
             Text(
@@ -527,11 +527,11 @@ fun TaskCard(
                             imageVector = Icons.Default.Link,
                             contentDescription = "Meeting link",
                             tint = Color(0xFF0F7BE8),
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = taskData.meetingLink,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
                             color = Color(0xFF0F7BE8),
                             maxLines = 2,
@@ -543,7 +543,7 @@ fun TaskCard(
                     // Show description only if no meeting link
                     Text(
                         text = taskData.subtitle,
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         maxLines = 2,
@@ -552,70 +552,20 @@ fun TaskCard(
                 }
             }
 
-            // Category and Deadline Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Text(
+                modifier = Modifier.padding(start = 16.dp, top = 6.dp),
+                text = "Due "+taskData.deadline,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
             )
-            {
-                // Priority Chip
-                val (priorityColor) = when (taskData.category.lowercase()) {
-                    "urgent" -> urgentPriorityColor to urgentPriorityBackground
-                    "high" -> highPriorityColor to highPriorityBackground
-                    "medium" -> mediumPriorityColor to mediumPriorityBackground
-                    "low" -> lowPriorityColor to lowPriorityBackground
-                    else -> Color.Gray to Color.Transparent
-                }
-
-                Text(
-                    text = "Due "+taskData.deadline,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.background,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 3.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Card(
-                            modifier = Modifier.size(8.dp),
-                            shape = CircleShape,
-                            colors = CardDefaults.cardColors(containerColor = priorityColor)
-                        ) {}
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = taskData.category,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
-
-            }
 
             // Task Details Section
             if (taskData.taskList.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(top = 12.dp)
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(0.15f)
                         )

@@ -174,15 +174,6 @@ class PreviewTaskScreen(
                         fullWidth = true
                     )
 
-                    // Priority Badge
-                    val (priorityColor) = when (task.category.lowercase()) {
-                        "urgent" -> urgentPriorityColor to urgentPriorityBackground
-                        "high" -> highPriorityColor to highPriorityBackground
-                        "medium" -> mediumPriorityColor to mediumPriorityBackground
-                        "low" -> lowPriorityColor to lowPriorityBackground
-                        else -> Color.Gray to Color.LightGray
-                    }
-
                     // Deadline Section
                     Row(
                         modifier = Modifier
@@ -228,41 +219,6 @@ class PreviewTaskScreen(
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.Gray.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
-                        {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                // Priority indicator dot
-                                Card(
-                                    modifier = Modifier.size(8.dp),
-                                    shape = CircleShape,
-                                    colors = CardDefaults.cardColors(containerColor = priorityColor)
-                                ) {}
-
-                                // Priority text
-                                Text(
-                                    text = task.category.replaceFirstChar { it.uppercase() },
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = priorityColor
-                                )
-                            }
                         }
                     }
 
