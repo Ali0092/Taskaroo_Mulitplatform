@@ -52,15 +52,6 @@ sealed class BottomNavTab(
                     SlideTransition(navigator)
                 }
             }
-            is AddTaskTab -> {
-                Navigator(CreateTaskScreen(taskTimestampToEdit = null)) { navigator ->
-                    LaunchedEffect(navigator.size) {
-                        val isAtRoot = navigator.size == 1
-                        onBottomBarVisibilityChange(isAtRoot)
-                    }
-                    SlideTransition(navigator)
-                }
-            }
             is CalendarTab -> {
                 Navigator(CalendarScreen()) { navigator ->
                     LaunchedEffect(navigator.size) {
@@ -101,33 +92,6 @@ sealed class BottomNavTab(
         }
     }
 
-    /**
-     * Add Task tab - Shows the create task screen
-     */
-    object AddTaskTab : BottomNavTab(
-        title = "Add Task",
-        icon = Res.drawable.add_bottom_nav
-    ) {
-        override val options: TabOptions
-            @Composable
-            get() {
-                val icon = painterResource(Res.drawable.add_bottom_nav)
-                return remember {
-                    TabOptions(
-                        index = 1u,
-                        title = "Add Task",
-                        icon = icon
-                    )
-                }
-            }
-
-        @Composable
-        override fun Content() {
-            Navigator(CreateTaskScreen(taskTimestampToEdit = null)) { navigator ->
-                SlideTransition(navigator)
-            }
-        }
-    }
 
     /**
      * Calendar tab - Shows the calendar/schedule screen
@@ -142,7 +106,7 @@ sealed class BottomNavTab(
                 val icon = painterResource(Res.drawable.calendar_bottom_nav)
                 return remember {
                     TabOptions(
-                        index = 2u,
+                        index = 1u,
                         title = "Calendar",
                         icon = icon
                     )

@@ -65,16 +65,8 @@ import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.common.toBoolean
 import com.dev.taskaroo.common.toTaskStatus
 import com.dev.taskaroo.database.LocalDatabase
-import com.dev.taskaroo.highPriorityBackground
-import com.dev.taskaroo.highPriorityColor
-import com.dev.taskaroo.lowPriorityBackground
-import com.dev.taskaroo.lowPriorityColor
-import com.dev.taskaroo.mediumPriorityBackground
-import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.notifications.rememberNotificationScheduler
-import com.dev.taskaroo.urgentPriorityBackground
-import com.dev.taskaroo.urgentPriorityColor
 import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import com.dev.taskaroo.utils.formatDateDisplay
 import com.dev.taskaroo.utils.formatTimeDisplay

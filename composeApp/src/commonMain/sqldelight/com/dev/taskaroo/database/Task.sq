@@ -14,7 +14,6 @@ CREATE TABLE Task (
     timestampMillis INTEGER NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
     subtitle TEXT NOT NULL,
-    category TEXT NOT NULL,
     completedTasksCount INTEGER NOT NULL DEFAULT 0,
     isTaskDone INTEGER NOT NULL DEFAULT 0,
     isMeeting INTEGER NOT NULL DEFAULT 0,
@@ -32,8 +31,8 @@ CREATE TABLE TaskItem (
 
 -- Insert a new task
 insertTask:
-INSERT INTO Task(timestampMillis, title, subtitle, category, completedTasksCount, isTaskDone, isMeeting, meetingLink)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO Task(timestampMillis, title, subtitle, completedTasksCount, isTaskDone, isMeeting, meetingLink)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- Get a specific task by timestamp
 getTaskByTimestamp:
@@ -62,7 +61,6 @@ updateTask:
 UPDATE Task SET
     title = ?,
     subtitle = ?,
-    category = ?,
     isTaskDone = ?,
     isMeeting = ?,
     meetingLink = ?

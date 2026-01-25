@@ -3,7 +3,6 @@
  *
  * Defines the color scheme used throughout the application including:
  * - Core background and primary colors
- * - Task priority-specific colors (Urgent, High, Medium, Low)
  * - Text and UI element colors
  *
  * All colors follow Material Design 3 principles with accessibility in mind.
@@ -51,29 +50,6 @@ val onPrimary = Color(0xFFFFFFFF)
 /** Background color for selected items */
 val selectedItemColor = Color(0XFFF6F1E7)
 
-/**
- * Priority colors for task management
- * Each priority level has a foreground and background color for visual distinction
- */
-/** Text/icon color for urgent priority tasks (Red) */
-val urgentPriorityColor = Color(0xFFD32F2F)
-/** Background color for urgent priority task chips */
-val urgentPriorityBackground = Color(0xFFFFEBEE)
-
-/** Text/icon color for high priority tasks (Orange-Red) */
-val highPriorityColor = Color(0xFFFF6F00)
-/** Background color for high priority task chips */
-val highPriorityBackground = Color(0xFFFFF3E0)
-
-/** Text/icon color for medium priority tasks (Yellow) */
-val mediumPriorityColor = Color(0xFFF9A825)
-/** Background color for medium priority task chips */
-val mediumPriorityBackground = Color(0xFFFFF8E1)
-
-/** Text/icon color for low priority tasks (Gray) */
-val lowPriorityColor = Color(0xFF757575)
-/** Background color for low priority task chips */
-val lowPriorityBackground = Color(0xFFFAFAFA)
 
 /**
  * Task Status colors for completion tracking

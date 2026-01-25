@@ -31,6 +31,5 @@ object Utils {
         "11 pm",  // hour 23
     )
 
-    val priorities = listOf("Urgent", "High", "Medium", "Low")
 
 }

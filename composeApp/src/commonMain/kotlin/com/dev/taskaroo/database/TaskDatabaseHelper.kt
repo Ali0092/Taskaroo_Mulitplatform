@@ -38,7 +38,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 timestampMillis = taskData.timestampMillis,
                 title = taskData.title,
                 subtitle = taskData.subtitle,
-                category = taskData.category,
                 completedTasksCount = taskData.completedTasks.toLong(),
                 isTaskDone = if (taskData.isDone) 1L else 0L,
                 isMeeting = if (taskData.isMeeting) 1L else 0L,
@@ -68,7 +67,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 timestampMillis = task.timestampMillis,
                 title = task.title,
                 subtitle = task.subtitle,
-                category = task.category,
                 taskList = taskItems.map { item ->
                     TaskItem(
                         id = item.id,
@@ -96,7 +94,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                     timestampMillis = task.timestampMillis,
                     title = task.title,
                     subtitle = task.subtitle,
-                    category = task.category,
                     taskList = taskItems.map { item ->
                         TaskItem(
                             id = item.id,
@@ -122,7 +119,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
             timestampMillis = task.timestampMillis,
             title = task.title,
             subtitle = task.subtitle,
-            category = task.category,
             taskList = taskItems.map { item ->
                 TaskItem(
                     id = item.id,
@@ -179,7 +175,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
             taskQueries.updateTask(
                 title = taskData.title,
                 subtitle = taskData.subtitle,
-                category = taskData.category,
                 isTaskDone = if (taskData.isDone) 1L else 0L,
                 isMeeting = if (taskData.isMeeting) 1L else 0L,
                 meetingLink = taskData.meetingLink,
@@ -233,7 +228,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                         timestampMillis = task.timestampMillis,
                         title = task.title,
                         subtitle = task.subtitle,
-                        category = task.category,
                         taskList = taskItems.map { item ->
                             TaskItem(
                                 id = item.id,
@@ -261,7 +255,6 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 timestampMillis = task.timestampMillis,
                 title = task.title,
                 subtitle = task.subtitle,
-                category = task.category,
                 taskList = taskItems.map { item ->
                     TaskItem(
                         id = item.id,

@@ -47,16 +47,17 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.Tab
 import com.dev.taskaroo.navigation.BottomNavTab
 import org.jetbrains.compose.resources.painterResource
+import taskaroo.composeapp.generated.resources.add_icon
 
 @Composable
 fun TaskarooBottomNavBar(
     currentTab: Tab,
     onTabSelected: (BottomNavTab) -> Unit,
+    onAddTaskClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val tabs = listOf(
         BottomNavTab.HomeTab,
-        BottomNavTab.AddTaskTab,
         BottomNavTab.CalendarTab
     )
 
@@ -104,19 +105,31 @@ fun TaskarooBottomNavBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                tabs.forEachIndexed { index, tab ->
-                    BottomNavItem(
-                        tab = tab,
-                        isSelected = index == selectedIndex,
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.weight(1f)
-                    )
+                // Home tab
+                BottomNavItem(
+                    tab = tabs[0],
+                    isSelected = selectedIndex == 0,
+                    onClick = { onTabSelected(tabs[0]) },
+                    modifier = Modifier.weight(1f)
+                )
 
-                    // Add subtle dividers between items (except after last)
-                    if (index < tabs.size - 1) {
-                        Spacer(modifier = Modifier.width(2.dp))
-                    }
-                }
+                Spacer(modifier = Modifier.width(2.dp))
+
+                // Add task button (always active style)
+                AddTaskButton(
+                    onClick = onAddTaskClick,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(2.dp))
+
+                // Calendar tab
+                BottomNavItem(
+                    tab = tabs[1],
+                    isSelected = selectedIndex == 1,
+                    onClick = { onTabSelected(tabs[1]) },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
@@ -186,6 +199,64 @@ private fun BottomNavItem(
             Icon(
                 painter = painterResource(tab.icon),
                 contentDescription = tab.title,
+                modifier = Modifier.size(32.dp),
+                tint = iconColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddTaskButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val iconScale by animateFloatAsState(
+        targetValue = 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
+        animationSpec = tween(
+            durationMillis = 350,
+            easing = FastOutSlowInEasing
+        )
+    )
+
+    val backgroundColor by animateColorAsState(
+        targetValue = Color.Transparent,
+        animationSpec = tween(
+            durationMillis = 350,
+            easing = FastOutSlowInEasing
+        )
+    )
+
+    Column(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.scale(iconScale)
+        ) {
+            Icon(
+                painter = painterResource(taskaroo.composeapp.generated.resources.Res.drawable.add_icon),
+                contentDescription = "Add Task",
                 modifier = Modifier.size(32.dp),
                 tint = iconColor
             )

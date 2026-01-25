@@ -40,6 +40,9 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.dev.taskaroo.common.TaskarooBottomNavBar
 import com.dev.taskaroo.navigation.BottomNavTab
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.transitions.SlideTransition
 
 class RootNavigationScreen : Screen {
 
@@ -47,12 +50,12 @@ class RootNavigationScreen : Screen {
     override fun Content() {
         var previousTabIndex by remember { mutableStateOf(0) }
         var showBottomBar by remember { mutableStateOf(true) }
+        var addTaskNavigationCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
 
         TabNavigator(BottomNavTab.HomeTab) {
             val tabNavigator = LocalTabNavigator.current
             val tabs = listOf(
                 BottomNavTab.HomeTab,
-                BottomNavTab.AddTaskTab,
                 BottomNavTab.CalendarTab
             )
             val currentTabIndex = tabs.indexOfFirst { it.key == tabNavigator.current.key }.coerceAtLeast(0)
@@ -76,6 +79,10 @@ class RootNavigationScreen : Screen {
                             currentTab = tabNavigator.current,
                             onTabSelected = { tab ->
                                 tabNavigator.current = tab
+                            },
+                            onAddTaskClick = {
+                                // Use the navigation callback if available
+                                addTaskNavigationCallback?.invoke()
                             }
                         )
                     }
@@ -121,6 +128,9 @@ class RootNavigationScreen : Screen {
                                 tab = currentTab,
                                 onBottomBarVisibilityChange = { visible ->
                                     showBottomBar = visible
+                                },
+                                onNavigationCallbackReady = { callback ->
+                                    addTaskNavigationCallback = callback
                                 }
                             )
                         }
@@ -134,13 +144,62 @@ class RootNavigationScreen : Screen {
 @Composable
 private fun TabContentWithBottomBarControl(
     tab: Tab,
-    onBottomBarVisibilityChange: (Boolean) -> Unit
+    onBottomBarVisibilityChange: (Boolean) -> Unit,
+    onNavigationCallbackReady: (() -> Unit) -> Unit
 ) {
     // Use the new tracking method that accesses Navigator from inside its composition scope
     if (tab is BottomNavTab) {
-        tab.ContentWithBottomBarTracking(onBottomBarVisibilityChange)
+        TabContentWithAddTaskNavigation(
+            tab = tab,
+            onBottomBarVisibilityChange = onBottomBarVisibilityChange,
+            onNavigationCallbackReady = onNavigationCallbackReady
+        )
     } else {
         // Fallback for non-BottomNavTab tabs (shouldn't happen in this app)
         tab.Content()
+    }
+}
+
+@Composable
+private fun TabContentWithAddTaskNavigation(
+    tab: BottomNavTab,
+    onBottomBarVisibilityChange: (Boolean) -> Unit,
+    onNavigationCallbackReady: (() -> Unit) -> Unit
+) {
+    when (tab) {
+        is BottomNavTab.HomeTab -> {
+            Navigator(MainScreen()) { navigator ->
+                // Provide navigation callback for add task
+                LaunchedEffect(navigator) {
+                    onNavigationCallbackReady {
+                        navigator.push(CreateTaskScreen(taskTimestampToEdit = null))
+                    }
+                }
+                
+                // Track navigator size for bottom bar visibility
+                LaunchedEffect(navigator.size) {
+                    val isAtRoot = navigator.size == 1
+                    onBottomBarVisibilityChange(isAtRoot)
+                }
+                SlideTransition(navigator)
+            }
+        }
+        is BottomNavTab.CalendarTab -> {
+            Navigator(CalendarScreen()) { navigator ->
+                // Provide navigation callback for add task
+                LaunchedEffect(navigator) {
+                    onNavigationCallbackReady {
+                        navigator.push(CreateTaskScreen(taskTimestampToEdit = null))
+                    }
+                }
+                
+                // Track navigator size for bottom bar visibility
+                LaunchedEffect(navigator.size) {
+                    val isAtRoot = navigator.size == 1
+                    onBottomBarVisibilityChange(isAtRoot)
+                }
+                SlideTransition(navigator)
+            }
+        }
     }
 }

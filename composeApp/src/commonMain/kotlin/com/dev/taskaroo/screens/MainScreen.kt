@@ -41,12 +41,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskCard
-import com.dev.taskaroo.common.TaskChipRow
+import com.dev.taskaroo.common.TaskSummaryCards
 import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
@@ -55,7 +56,7 @@ import com.dev.taskaroo.notifications.rememberNotificationScheduler
 import com.dev.taskaroo.preferences.AppSettings
 import com.dev.taskaroo.preferences.ThemeMode
 import com.dev.taskaroo.preferences.getPreferencesManager
-import com.dev.taskaroo.utils.Utils
+import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import com.dev.taskaroo.utils.currentTimeMillis
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -96,12 +97,10 @@ class MainScreen : Screen {
             }
         }
 
-        // Filter state - persists during navigation session
-        var selectedFilter by rememberSaveable { mutableStateOf("Upcoming") }
-
-        // Track all tasks for chip visibility
+        // Track all tasks and filter state
         var allTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
-        var tasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+        var selectedFilter by remember { mutableStateOf("Active") }
+        var filteredTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
 
         // Delete dialog state
@@ -121,43 +120,23 @@ class MainScreen : Screen {
             }
         }
 
-        // Filter and sort tasks based on selected filter
+        // Filter tasks based on selected filter
         LaunchedEffect(selectedFilter, allTasks) {
             val currentTime = currentTimeMillis()
-
-            tasks = when (selectedFilter) {
-                "All" -> {
-                    allTasks.sortedBy { it.timestampMillis }
-                }
-
-                "Active" -> {
-                    allTasks
-                        .filter { !it.isDone }
-                        .sortedBy { it.timestampMillis }
-                }
-
-                "Completed" -> {
-                    allTasks
-                        .filter { it.isDone }
-                        .sortedBy { it.timestampMillis }
-                }
-
-                "Upcoming" -> {
-                    allTasks
-                        .filter { it.timestampMillis >= currentTime }
-                        .sortedBy { it.timestampMillis }
-                }
-
-                "Meeting" -> {
-                    allTasks
-                        .filter { it.isMeeting }
-                        .sortedBy { it.timestampMillis }
-                }
-
+            
+            filteredTasks = when (selectedFilter) {
+                "All" -> allTasks.sortedBy { it.timestampMillis }
+                "Completed" -> allTasks.filter { it.isDone }.sortedBy { it.timestampMillis }
+                "Active" -> allTasks
+                    .filter { !it.isDone && it.timestampMillis >= currentTime }
+                    .sortedBy { it.timestampMillis }
+                "Overdue" -> allTasks
+                    .filter { !it.isDone && isTaskOverdue(it.timestampMillis) }
+                    .sortedBy { it.timestampMillis }
                 else -> allTasks.sortedBy { it.timestampMillis }
             }
-
         }
+
 
         Scaffold { innerPaddings ->
             Column(
@@ -178,13 +157,41 @@ class MainScreen : Screen {
 
                 Spacer(Modifier.height(16.dp))
 
-                // Show filter chips only when there are tasks
+                // Show summary cards only when there are tasks
                 if (allTasks.isNotEmpty()) {
-                    TaskChipRow(
-                        categories = Utils.categoriesList,
-                        onCategorySelected = { filter ->
+                    val currentTime = currentTimeMillis()
+                    val totalTasks = allTasks.size
+                    val completedTasks = allTasks.count { it.isDone }
+                    val activeTasks = allTasks.count { !it.isDone }
+                    val overdueTasks = allTasks.count { !it.isDone && isTaskOverdue(it.timestampMillis) }
+                    
+                    TaskSummaryCards(
+                        totalTasks = totalTasks,
+                        completedTasks = completedTasks,
+                        activeTasks = activeTasks,
+                        overdueTasks = overdueTasks,
+                        selectedFilter = selectedFilter,
+                        onFilterSelected = { filter ->
                             selectedFilter = filter
                         }
+                    )
+                    
+                    Spacer(Modifier.height(24.dp))
+                }
+
+                // Dynamic section title - only show when there are filtered tasks
+                if (allTasks.isNotEmpty() && filteredTasks.isNotEmpty()) {
+                    Text(
+                        text = when (selectedFilter) {
+                            "All" -> "All Tasks"
+                            "Completed" -> "Completed Tasks"
+                            "Active" -> "Active Tasks"
+                            "Overdue" -> "Overdue Tasks"
+                            else -> "Recent Tasks"
+                        },
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
@@ -200,7 +207,32 @@ class MainScreen : Screen {
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                         )
                     }
-                } else if (tasks.isEmpty()) {
+                } else if (filteredTasks.isEmpty() && allTasks.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.no_task),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No ${selectedFilter.lowercase()} tasks",
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                } else if (allTasks.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -231,7 +263,7 @@ class MainScreen : Screen {
                         modifier = Modifier.fillMaxWidth()
                     )
                     {
-                        items(tasks, key = { it.timestampMillis }) { task ->
+                        items(filteredTasks, key = { it.timestampMillis }) { task ->
                             TaskCard(
                                 taskData = task,
                                 onTaskDoneToggle = { isDone ->
@@ -289,25 +321,6 @@ class MainScreen : Screen {
                                                 }
                                             }
 
-                                            tasks = tasks.map { currentTask ->
-                                                if (currentTask.timestampMillis == task.timestampMillis) {
-                                                    val updatedTaskList = currentTask.taskList.map { item ->
-                                                        if (item.id == taskItemId) {
-                                                            item.copy(isCompleted = isChecked)
-                                                        } else {
-                                                            item
-                                                        }
-                                                    }
-                                                    val completedCount = updatedTaskList.count { it.isCompleted }
-
-                                                    currentTask.copy(
-                                                        taskList = updatedTaskList,
-                                                        completedTasks = completedCount
-                                                    )
-                                                } else {
-                                                    currentTask
-                                                }
-                                            }
                                         } catch (e: Exception) {
                                             e.printStackTrace()
                                         }
@@ -343,9 +356,8 @@ class MainScreen : Screen {
                                 taskToDelete?.let { task ->
                                     databaseHelper.deleteTask(task.timestampMillis)
 
-                                    // Update both allTasks and tasks lists
+                                    // Update allTasks list
                                     allTasks = allTasks.filter { it.timestampMillis != task.timestampMillis }
-                                    tasks = tasks.filter { it.timestampMillis != task.timestampMillis }
 
                                     showDeleteDialog = false
                                     taskToDelete = null

@@ -33,7 +33,6 @@ data class TaskItem(
  * @property id Unique identifier for the task, defaults to timestampMillis as a string
  * @property title The main title of the task
  * @property subtitle Additional description or subtitle for the task
- * @property category The priority category of the task: "urgent", "medium", "high", or "low"
  * @property taskList List of individual task items belonging to this task
  * @property completedTasks Number of completed tasks in the taskList
  */
@@ -42,7 +41,6 @@ data class TaskData(
     val id: String = timestampMillis.toString(),
     val title: String,
     val subtitle: String,
-    val category: String, // "urgent", "medium", "high", "low"
     val taskList: List<TaskItem>,
     var completedTasks: Int = 0,
     val isDone: Boolean = false,

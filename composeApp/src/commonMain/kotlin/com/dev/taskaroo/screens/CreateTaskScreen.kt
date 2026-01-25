@@ -61,7 +61,9 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.dev.taskaroo.common.DeleteConfirmationDialog
+import com.dev.taskaroo.navigation.BottomNavTab
 import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.TaskData
@@ -73,7 +75,6 @@ import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.utils.NativeDatePicker
 import com.dev.taskaroo.utils.NativeTimePicker
-import com.dev.taskaroo.utils.Utils.priorities
 import com.dev.taskaroo.utils.currentTimeMillis
 import com.dev.taskaroo.utils.todayDate
 import kotlinx.coroutines.delay
@@ -101,6 +102,7 @@ class CreateTaskScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val tabNavigator = LocalTabNavigator.current
         val databaseHelper = LocalDatabase.current
 
         // Determine if we're in edit mode
@@ -124,7 +126,6 @@ class CreateTaskScreen(
         // Form states
         var taskTitle by remember { mutableStateOf("") }
         var taskDescription by remember { mutableStateOf("") }
-        var selectedPriority by remember { mutableStateOf("Medium") }
         var selectedDate by remember {
             val today = todayDate()
             mutableStateOf("${today.year}-${today.monthNumber.toString().padStart(2, '0')}-${today.dayOfMonth.toString().padStart(2, '0')}")
@@ -226,7 +227,6 @@ class CreateTaskScreen(
             existingTask?.let { task ->
                 taskTitle = task.title
                 taskDescription = task.subtitle
-                selectedPriority = task.category
                 isMeetingTask = task.isMeeting
                 meetingLink = task.meetingLink
 
@@ -384,7 +384,6 @@ class CreateTaskScreen(
                                             timestampMillis = timestampMillis,
                                             title = taskTitle,
                                             subtitle = taskDescription,
-                                            category = selectedPriority,
                                             taskList = taskItems,
                                             completedTasks = completedCount,
                                             isMeeting = isMeetingTask,
@@ -423,8 +422,9 @@ class CreateTaskScreen(
                                             navigator.pop()
                                             navigator.pop()
                                         } else {
-                                            // Pop once for creating new task
+                                            // Pop once and navigate to Home tab
                                             navigator.pop()
+                                            tabNavigator.current = BottomNavTab.HomeTab
                                         }
                                     } else {
                                         errorMessage = "Invalid date format. Use YYYY-MM-DD"
@@ -512,52 +512,6 @@ class CreateTaskScreen(
                     }
                 }
 
-                // Priority Selection - Moved to top
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Priority",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        priorities.forEach { priority ->
-                            val isSelected = selectedPriority == priority
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(36.dp)
-                                    .background(
-                                        color = if (isSelected) primaryLiteColorVariant else Color.Transparent,
-                                        shape = CircleShape
-                                    )
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isSelected) primaryLiteColorVariant else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
-                                        shape = CircleShape
-                                    )
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        selectedPriority = priority
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = priority,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = if (isSelected) primaryColorVariant else MaterialTheme.colorScheme.onBackground
-                                )
-                            }
-                        }
-                    }
-                }
 
                 // Date and Time Selection - Combined Row
                 Column(

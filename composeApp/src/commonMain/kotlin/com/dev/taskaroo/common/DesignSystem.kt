@@ -25,11 +25,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -70,12 +73,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.taskaroo.completedStatusBackground
 import com.dev.taskaroo.completedStatusColor
-import com.dev.taskaroo.highPriorityBackground
-import com.dev.taskaroo.highPriorityColor
-import com.dev.taskaroo.lowPriorityBackground
-import com.dev.taskaroo.lowPriorityColor
-import com.dev.taskaroo.mediumPriorityBackground
-import com.dev.taskaroo.mediumPriorityColor
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import com.dev.taskaroo.overdueStatusBackground
@@ -84,14 +81,17 @@ import com.dev.taskaroo.primaryColorVariant
 import com.dev.taskaroo.primaryLiteColorVariant
 import com.dev.taskaroo.undoneStatusBackground
 import com.dev.taskaroo.undoneStatusColor
-import com.dev.taskaroo.urgentPriorityBackground
-import com.dev.taskaroo.urgentPriorityColor
 import com.dev.taskaroo.utils.DateTimeUtils.isTaskOverdue
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
+import taskaroo.composeapp.generated.resources.all_icon
 import taskaroo.composeapp.generated.resources.back_button
 import taskaroo.composeapp.generated.resources.calendar
+import taskaroo.composeapp.generated.resources.completed_icon
+import taskaroo.composeapp.generated.resources.inprogress_icon
+import taskaroo.composeapp.generated.resources.overdue_icon
+import taskaroo.composeapp.generated.resources.tick_icon
 
 /**
  * Custom top app bar component with navigation and action icons
@@ -993,5 +993,161 @@ fun TaskItemRow(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
+    }
+}
+
+/**
+ * Summary cards grid showing task statistics that act as interactive filters
+ * Displays total, completed, active, and overdue task counts
+ *
+ * @param totalTasks Total number of tasks
+ * @param completedTasks Number of completed tasks
+ * @param activeTasks Number of active/pending tasks
+ * @param overdueTasks Number of overdue tasks
+ * @param selectedFilter Currently selected filter ("All", "Completed", "Active", "Overdue")
+ * @param onFilterSelected Callback when a filter card is selected
+ */
+@Composable
+fun TaskSummaryCards(
+    totalTasks: Int,
+    completedTasks: Int,
+    activeTasks: Int,
+    overdueTasks: Int,
+    selectedFilter: String = "Active",
+    onFilterSelected: (String) -> Unit = {}
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            SummaryCard(
+                title = "All",
+                count = totalTasks,
+                icon = Res.drawable.all_icon,
+                backgroundColor = Color(0xFF609CFC),
+                isSelected = selectedFilter == "All",
+                onClick = { onFilterSelected("All") },
+                modifier = Modifier.weight(1f)
+            )
+            
+            SummaryCard(
+                title = "Completed",
+                count = completedTasks,
+                icon = Res.drawable.completed_icon,
+                backgroundColor = Color(0xFFE8C254),
+                isSelected = selectedFilter == "Completed",
+                onClick = { onFilterSelected("Completed") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SummaryCard(
+                title = "Active",
+                count = activeTasks,
+                icon = Res.drawable.inprogress_icon,
+                backgroundColor = Color(0xFF41C4AA),
+                isSelected = selectedFilter == "Active",
+                onClick = { onFilterSelected("Active") },
+                modifier = Modifier.weight(1f)
+            )
+            
+            SummaryCard(
+                title = "Overdue",
+                count = overdueTasks,
+                icon = Res.drawable.overdue_icon,
+                backgroundColor = Color(0xFFDE5151),
+                isSelected = selectedFilter == "Overdue",
+                onClick = { onFilterSelected("Overdue") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+/**
+ * Individual summary card component that acts as a clickable filter
+ * Shows count, title and icon with colored background
+ *
+ * @param title The card title (e.g., "Active", "Completed")
+ * @param count The number to display
+ * @param icon The icon resource to show
+ * @param backgroundColor Background color for the card
+ * @param isSelected Whether this card is currently selected
+ * @param onClick Callback when the card is clicked
+ * @param modifier Modifier for the card
+ */
+@Composable
+private fun SummaryCard(
+    title: String,
+    count: Int,
+    icon: DrawableResource,
+    backgroundColor: Color,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) 
+                backgroundColor.copy(alpha = 0.9f)
+            else 
+                backgroundColor
+        ),
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) 
+                backgroundColor 
+            else 
+                backgroundColor.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding( 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = title,
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(28.dp)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = "$count Tasks",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                )
+            }
+            
+
+        }
     }
 }
