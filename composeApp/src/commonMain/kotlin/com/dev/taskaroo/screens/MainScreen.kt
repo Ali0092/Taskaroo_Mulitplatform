@@ -61,6 +61,7 @@ import com.dev.taskaroo.utils.currentTimeMillis
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
+import taskaroo.composeapp.generated.resources.edit_icon
 import taskaroo.composeapp.generated.resources.no_data_placeholder
 import taskaroo.composeapp.generated.resources.no_task
 import taskaroo.composeapp.generated.resources.settings_icon
@@ -149,8 +150,12 @@ class MainScreen : Screen {
                 TaskarooTopAppBar(
                     title = "From to-do to done✨",
                     canShowNavigationIcon = false,
-                    otherIcon = Res.drawable.settings_icon,
+                    otherIcon = Res.drawable.edit_icon,
+                    trailingIcon = Res.drawable.settings_icon,
                     onOtherIconClick = {
+                        navigator.push(NotesScreen())
+                    },
+                    onTrailingIconClick = {
                         navigator.push(SettingsScreen())
                     }
                 )

@@ -162,10 +162,11 @@ fun TaskarooTopAppBar(
 }
 
 /**
- * Alert dialog for confirming task deletion
+ * Alert dialog for confirming item deletion
  *
  * @param showDialog Whether the dialog should be displayed
- * @param taskTitle The title of the task to be deleted
+ * @param taskTitle The title of the item to be deleted
+ * @param itemType The type of item being deleted (default: "Task")
  * @param onDismiss Callback invoked when dialog is dismissed or cancelled
  * @param onConfirm Callback invoked when user confirms deletion
  */
@@ -173,6 +174,7 @@ fun TaskarooTopAppBar(
 fun DeleteConfirmationDialog(
     showDialog: Boolean,
     taskTitle: String,
+    itemType: String = "Task",
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -181,7 +183,7 @@ fun DeleteConfirmationDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = "Delete Task",
+                    text = "Delete $itemType",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -331,10 +333,12 @@ fun TaskCardConcise(
     onLongClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier.combinedClickable(
-            onClick = { onClick() },
-            onLongClick = { onLongClick() }
-        ),
+        modifier = modifier
+            .alpha(if (taskData.isDone) 0.85f else 1f)
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { onLongClick() }
+            ),
         border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -353,7 +357,8 @@ fun TaskCardConcise(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
             )
 
             // Show meeting link if exists, otherwise show description
@@ -399,7 +404,8 @@ fun TaskCardConcise(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
                 )
             }
 
@@ -427,7 +433,8 @@ fun TaskCardConcise(
                 text = "Due: " + taskData.deadline,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
             )
 
         }
@@ -547,7 +554,8 @@ fun TaskCard(
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
                     )
                 }
             }
@@ -557,7 +565,8 @@ fun TaskCard(
                 text = "Due "+taskData.deadline,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                textDecoration = if (taskData.isDone) TextDecoration.LineThrough else TextDecoration.None
             )
 
             // Task Details Section

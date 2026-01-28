@@ -90,3 +90,32 @@ DELETE FROM TaskItem WHERE taskTimestamp = ?;
 -- Get all meeting tasks
 getMeetingTasks:
 SELECT * FROM Task WHERE isMeeting = 1 ORDER BY timestampMillis ASC;
+
+-- =============================================================================
+-- Note table: Stores notes with timestamp as primary key
+-- =============================================================================
+CREATE TABLE Note (
+    timestampMillis INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL
+);
+
+-- Insert a new note
+insertNote:
+INSERT INTO Note(timestampMillis, title, content) VALUES (?, ?, ?);
+
+-- Get a specific note by timestamp
+getNoteByTimestamp:
+SELECT * FROM Note WHERE timestampMillis = ?;
+
+-- Get all notes ordered by timestamp (newest first)
+getAllNotes:
+SELECT * FROM Note ORDER BY timestampMillis DESC;
+
+-- Update an existing note
+updateNote:
+UPDATE Note SET title = ?, content = ? WHERE timestampMillis = ?;
+
+-- Delete a note
+deleteNote:
+DELETE FROM Note WHERE timestampMillis = ?;

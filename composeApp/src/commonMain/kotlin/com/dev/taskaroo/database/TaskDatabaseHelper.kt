@@ -17,6 +17,7 @@ package com.dev.taskaroo.database
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
+import com.dev.taskaroo.modal.NoteData
 import com.dev.taskaroo.modal.TaskData
 import com.dev.taskaroo.modal.TaskItem
 import kotlinx.coroutines.Dispatchers
@@ -268,5 +269,65 @@ class TaskDatabaseHelper(sqlDriver: SqlDriver) {
                 meetingLink = task.meetingLink
             )
         }
+    }
+
+    // ==========================================================================
+    // Note Operations
+    // ==========================================================================
+
+    /**
+     * Insert a new note into the database
+     */
+    suspend fun insertNote(noteData: NoteData) = withContext(Dispatchers.Default) {
+        taskQueries.insertNote(
+            timestampMillis = noteData.timestampMillis,
+            title = noteData.title,
+            content = noteData.content
+        )
+    }
+
+    /**
+     * Get all notes from the database (newest first)
+     */
+    suspend fun getAllNotes(): List<NoteData> = withContext(Dispatchers.Default) {
+        val notes = taskQueries.getAllNotes().executeAsList()
+        notes.map { note ->
+            NoteData(
+                timestampMillis = note.timestampMillis,
+                title = note.title,
+                content = note.content
+            )
+        }
+    }
+
+    /**
+     * Get a specific note by timestamp
+     */
+    suspend fun getNoteByTimestamp(timestamp: Long): NoteData? = withContext(Dispatchers.Default) {
+        val note = taskQueries.getNoteByTimestamp(timestamp).executeAsOneOrNull()
+            ?: return@withContext null
+        NoteData(
+            timestampMillis = note.timestampMillis,
+            title = note.title,
+            content = note.content
+        )
+    }
+
+    /**
+     * Update an existing note
+     */
+    suspend fun updateNote(noteData: NoteData) = withContext(Dispatchers.Default) {
+        taskQueries.updateNote(
+            title = noteData.title,
+            content = noteData.content,
+            timestampMillis = noteData.timestampMillis
+        )
+    }
+
+    /**
+     * Delete a note by timestamp
+     */
+    suspend fun deleteNote(timestamp: Long) = withContext(Dispatchers.Default) {
+        taskQueries.deleteNote(timestamp)
     }
 }
