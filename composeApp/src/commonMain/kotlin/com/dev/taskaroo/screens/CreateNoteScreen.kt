@@ -48,6 +48,8 @@ import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.NoteData
 import com.dev.taskaroo.utils.currentTimeMillis
 import kotlinx.coroutines.launch
+import taskaroo.composeapp.generated.resources.Res
+import taskaroo.composeapp.generated.resources.save_icon
 
 class CreateNoteScreen(
     private val noteTimestampToEdit: Long? = null
@@ -131,6 +133,11 @@ class CreateNoteScreen(
                 TaskarooTopAppBar(
                     title = if (isEditMode) "Edit note" else "New note",
                     canShowNavigationIcon = true,
+                    otherIcon = Res.drawable.save_icon,
+                    onOtherIconClick = {
+                        saveNote()
+                        navigator.pop()
+                    },
                     onBackButtonClick = {
                         saveNote()
                         navigator.pop()

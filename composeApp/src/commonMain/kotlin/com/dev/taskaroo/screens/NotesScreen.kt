@@ -12,8 +12,9 @@
 package com.dev.taskaroo.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,20 +42,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.dev.taskaroo.common.DeleteConfirmationDialog
 import com.dev.taskaroo.common.TaskarooTopAppBar
 import com.dev.taskaroo.database.LocalDatabase
 import com.dev.taskaroo.modal.NoteData
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import taskaroo.composeapp.generated.resources.Res
 import taskaroo.composeapp.generated.resources.edit_icon
@@ -66,12 +71,15 @@ class NotesScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val databaseHelper = LocalDatabase.current
+        val coroutineScope = rememberCoroutineScope()
 
         var notes by remember { mutableStateOf<List<NoteData>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
+        var showDeleteDialog by remember { mutableStateOf(false) }
+        var noteToDelete by remember { mutableStateOf<NoteData?>(null) }
 
-        // Load notes from database
-        LaunchedEffect(Unit) {
+        // Load notes from database - re-fetch whenever this screen becomes the top screen
+        LaunchedEffect(navigator.lastItem) {
             try {
                 isLoading = true
                 notes = databaseHelper.getAllNotes()
@@ -150,7 +158,8 @@ class NotesScreen : Screen {
                                 text = "No notes yet\ntap + to create one",
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                                 fontWeight = FontWeight.Bold,
-                                lineHeight = 24.sp
+                                lineHeight = 24.sp,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -165,7 +174,11 @@ class NotesScreen : Screen {
                             NoteCard(
                                 noteData = note,
                                 onClick = {
-                                    navigator.push(PreviewNoteScreen(noteTimestamp = note.timestampMillis))
+                                    navigator.push(CreateNoteScreen(noteTimestampToEdit = note.timestampMillis))
+                                },
+                                onLongClick = {
+                                    noteToDelete = note
+                                    showDeleteDialog = true
                                 }
                             )
                         }
@@ -173,47 +186,98 @@ class NotesScreen : Screen {
                 }
             }
         }
+
+        DeleteConfirmationDialog(
+            showDialog = showDeleteDialog,
+            taskTitle = noteToDelete?.title?.ifEmpty { "this note" } ?: "Note",
+            itemType = "Note",
+            onConfirm = {
+                noteToDelete?.let { note ->
+                    coroutineScope.launch {
+                        try {
+                            databaseHelper.deleteNote(note.timestampMillis)
+                            notes = notes.filter { it.timestampMillis != note.timestampMillis }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                showDeleteDialog = false
+                noteToDelete = null
+            },
+            onDismiss = {
+                showDeleteDialog = false
+                noteToDelete = null
+            }
+        )
     }
 }
 
+
 /**
- * Individual note card displaying title and formatted date
+ * Individual note card displaying title, content preview, and formatted date
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun NoteCard(
     noteData: NoteData,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() },
-        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = noteData.title.ifEmpty { "Untitled" },
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+                .height(200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .combinedClickable(
+                    onClick = { onClick() },
+                    onLongClick = { onLongClick() }
+                ),
+            border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        )
+        {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = noteData.title.ifEmpty { "Untitled" },
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            Text(
-                text = noteData.formattedDate,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
+                if (noteData.content.isNotBlank()) {
+                    Text(
+                        text = noteData.content,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = noteData.formattedDate,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+        )
     }
 }
