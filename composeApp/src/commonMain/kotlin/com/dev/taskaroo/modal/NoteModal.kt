@@ -10,6 +10,7 @@ package com.dev.taskaroo.modal
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 /**
  * Represents a note with title and content.
@@ -18,6 +19,7 @@ import kotlinx.datetime.toLocalDateTime
  * @property title The title of the note
  * @property content The content/body of the note
  */
+@OptIn(ExperimentalTime::class)
 data class NoteData(
     val timestampMillis: Long,
     val title: String,
