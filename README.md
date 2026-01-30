@@ -16,19 +16,17 @@ A modern, cross-platform task management application built with Kotlin Multiplat
 - **Modern UI**: Clean Material Design 3 interface with custom theming
 
 ## Screenshots (Both Android & iOS)
-### HomeScreen & Calendar
+### HomeScreen & Calendar.
 ----
-<img width="22%" height="1500" alt="main_screen_dark" src="https://github.com/user-attachments/assets/789d9c34-808d-4856-8e35-16dabb77e837" />
-<img width="22%" height="1500" alt="main_screen_lite" src="https://github.com/user-attachments/assets/10ce552e-06db-4eea-8b45-e2acefa5e6e3" />
-<img width="22%" height="1500" alt="calendar_screen _lite" src="https://github.com/user-attachments/assets/e8475f80-4736-44ab-9204-0aa3449ef854" />
-<img width="22%" height="1500" alt="calendar_screen_lite" src="https://github.com/user-attachments/assets/f8ad1048-d330-486b-8cd1-5226e5bbb6e6" />
+<img width="23%" height="1500" alt="Simulator Screenshot - 17 I phone - 2026-01-31 at 00 17 37" src="https://github.com/user-attachments/assets/a1d25ed2-b340-43da-9f2f-75c08f38ac2a" />
+<img width="22%" height="1500" alt="main_screen_dark" src="https://github.com/user-attachments/assets/6ffebf0e-c28c-4958-80b4-2ebdfbe5bf27" />
 
-### Task Details Screen, Date Picker & Status changinig
+<img width="23%" height="1500" alt="Simulator Screenshot - 17 I phone - 2026-01-31 at 00 18 03" src="https://github.com/user-attachments/assets/d82043f3-bf53-4985-aa26-228270e1de97" />
+<img width="22%" height="1500" alt="calendar_screen _lite" src="https://github.com/user-attachments/assets/cbf44860-5d20-4b13-934e-083f015746ed" />
+
+### Notes Screen.
 ----
-<img width="22%" height="1500" alt="task_details_scr_lite" src="https://github.com/user-attachments/assets/e8b75819-7395-429e-b476-b1933fa6855c" />
-<img width="22%" height="1500" alt="task_details_scr_dark" src="https://github.com/user-attachments/assets/e4c01420-6765-4234-962b-12daafc6ae17" />
-<img width="22%" height="1500" alt="native_date_time_pickers" src="https://github.com/user-attachments/assets/0c86d948-8f25-4880-9f0e-12931316672f" />
-<img width="22%" height="1500" alt="priority_changes" src="https://github.com/user-attachments/assets/a860f5dd-03ad-418e-a698-53f423fe1466" />
+<img width="22%" height="1500" alt="Screenshot_20260131_000952" src="https://github.com/user-attachments/assets/d38c67a1-7b6c-4061-9f48-d83fe5998bfb" />
 
 ## Technology Stack
 
